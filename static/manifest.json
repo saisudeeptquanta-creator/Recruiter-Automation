@@ -1,0 +1,19 @@
+{
+  "name": "Recruitment Automation",
+  "short_name": "Recruiter",
+  "description": "Recruitment count dashboard and lead review app.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F3F6FB",
+  "theme_color": "#101828",
+  "icons": [
+    {
+      "src": "/app/static/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

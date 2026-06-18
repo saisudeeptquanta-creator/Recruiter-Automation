@@ -2,7 +2,6 @@ import streamlit as st
 import streamlit.components.v1 as components
 import pandas as pd
 import html
-from io import BytesIO
 from datetime import datetime
 
 st.set_page_config(page_title="Recruitment Count Dashboard", page_icon=":clipboard:", layout="wide")
@@ -38,6 +37,27 @@ components.html(
                 max-height: 0 !important;
                 overflow: hidden !important;
                 transform: scale(0) !important;
+            }
+            div[data-testid="stElementContainer"]:has(style),
+            div[data-testid="stElementContainer"]:has(iframe[height="0"]),
+            div[data-testid="stElementContainer"]:has(iframe[width="0"]),
+            div[data-testid="stElementContainer"][width="0px"],
+            div[data-testid="stElementContainer"][height="0px"],
+            div[data-testid="stElementContainer"]:has(iframe[data-testid="stIFrame"][title="st.iframe"]) {
+                display: none !important;
+                visibility: hidden !important;
+                height: 0 !important;
+                min-height: 0 !important;
+                max-height: 0 !important;
+                width: 0 !important;
+                min-width: 0 !important;
+                max-width: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: hidden !important;
+                line-height: 0 !important;
+                position: absolute !important;
+                inset: 0 auto auto 0 !important;
             }
         `;
 
@@ -75,6 +95,40 @@ components.html(
 
         hideBadges();
         setInterval(hideBadges, 500);
+    })();
+    </script>
+    """,
+    height=0,
+    width=0,
+)
+
+components.html(
+    """
+    <script>
+    (function () {
+        function addTag(doc, tag, attrs) {
+            if (!doc) return;
+            const key = attrs.name ? `${tag}[name="${attrs.name}"]` : `${tag}[rel="${attrs.rel}"]`;
+            if (doc.querySelector(key)) return;
+            const el = doc.createElement(tag);
+            Object.entries(attrs).forEach(([name, value]) => el.setAttribute(name, value));
+            (doc.head || doc.documentElement).appendChild(el);
+        }
+
+        function installPwaTags(doc) {
+            addTag(doc, 'link', { rel: 'manifest', href: '/app/static/manifest.json' });
+            addTag(doc, 'link', { rel: 'icon', href: '/app/static/icon.svg', type: 'image/svg+xml' });
+            addTag(doc, 'link', { rel: 'apple-touch-icon', href: '/app/static/icon.svg' });
+            addTag(doc, 'meta', { name: 'theme-color', content: '#101828' });
+            addTag(doc, 'meta', { name: 'mobile-web-app-capable', content: 'yes' });
+            addTag(doc, 'meta', { name: 'apple-mobile-web-app-capable', content: 'yes' });
+            addTag(doc, 'meta', { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' });
+            addTag(doc, 'meta', { name: 'apple-mobile-web-app-title', content: 'Recruiter' });
+        }
+
+        installPwaTags(document);
+        try { installPwaTags(window.parent.document); } catch (e) {}
+        try { installPwaTags(window.top.document); } catch (e) {}
     })();
     </script>
     """,
@@ -128,6 +182,29 @@ st.markdown("""
     visibility: hidden;
 }
 
+/* HIDE TECHNICAL STYLE / SCRIPT INJECTOR ROWS */
+div[data-testid="stElementContainer"]:has(style),
+div[data-testid="stElementContainer"]:has(iframe[height="0"]),
+div[data-testid="stElementContainer"]:has(iframe[width="0"]),
+div[data-testid="stElementContainer"][width="0px"],
+div[data-testid="stElementContainer"][height="0px"],
+div[data-testid="stElementContainer"]:has(iframe[data-testid="stIFrame"][title="st.iframe"]) {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    max-height: 0 !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    max-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    line-height: 0 !important;
+    position: absolute !important;
+    inset: 0 auto auto 0 !important;
+}
+
 /* STREAMLIT CLOUD BADGE / CREATOR PROFILE */
 a[href="https://streamlit.io/cloud"],
 a[href*="streamlit.io/cloud"],
@@ -172,21 +249,10 @@ div[class*="_profilePreview"],
     background: linear-gradient(90deg, transparent, var(--gold), var(--cyan), transparent);
 }
 
-.topbox:after {
-    content: "KNIGHT UI";
-    position: absolute;
-    right: 24px;
-    top: 22px;
-    color: var(--gold);
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 1.8px;
-}
-
 .topbox h1 {
     color: var(--text) !important;
     font-size: 22px !important;
-    font-weight: 850 !important;
+    font-weight: 700 !important;
     margin: 0;
     line-height: 1.2;
 }
@@ -195,7 +261,7 @@ div[class*="_profilePreview"],
     max-width: 800px;
     font-size: 12px !important;
     color: var(--muted) !important;
-    margin: 8px 0 0;
+    margin: 3px 0 0;
     line-height: 1.55;
 }
 
@@ -300,7 +366,7 @@ div[class*="_profilePreview"],
     max-width: calc(100% - 38px);
     font-size: 9px;
     color: var(--muted);
-    font-weight: 800;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: .75px;
     line-height: 1.3;
@@ -308,7 +374,7 @@ div[class*="_profilePreview"],
 
 .num {
     font-size: 28px;
-    font-weight: 900;
+    font-weight: 700;
     color: currentColor;
     margin-top: 10px;
     letter-spacing: 0;
@@ -334,7 +400,7 @@ div[class*="_profilePreview"],
     padding: 7px 11px;
     min-height: 34px;
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 700;
     color: var(--muted);
     background: transparent;
     border: 1px solid transparent;
@@ -363,7 +429,7 @@ div[data-testid="stTabs"] > div:last-child {
 /* HEADINGS */
 h1, h2, h3 {
     color: var(--text) !important;
-    font-weight: 850 !important;
+    font-weight: 700 !important;
     letter-spacing: 0;
 }
 
@@ -424,25 +490,6 @@ h2, h3 {
 .stMultiSelect [data-baseweb="select"]:focus-within {
     border-color: var(--gold) !important;
     box-shadow: 0 0 0 3px rgba(199, 164, 93, 0.13) !important;
-}
-
-/* BUTTON */
-.stDownloadButton button {
-    width: 100%;
-    background: linear-gradient(180deg, #c7a45d, #9e7b33);
-    color: #080b12;
-    border: 1px solid #e1c985;
-    border-radius: 10px;
-    padding: 12px 20px;
-    font-size: 12px;
-    font-weight: 850;
-    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.28);
-}
-
-.stDownloadButton button:hover {
-    background: linear-gradient(180deg, #d6b66d, #ad873d);
-    color: #080b12;
-    border: 1px solid #e1c985;
 }
 
 [data-testid="stAlert"] {
@@ -615,18 +662,6 @@ h1, h2, h3 {
     border-color: var(--line) !important;
 }
 
-.stDownloadButton button {
-    background: #101828 !important;
-    color: #ffffff !important;
-    border: 1px solid #101828 !important;
-}
-
-.stDownloadButton button:hover {
-    background: #2457d6 !important;
-    color: #ffffff !important;
-    border-color: #2457d6 !important;
-}
-
 .insight-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -647,9 +682,9 @@ h1, h2, h3 {
 }
 
 .insight-card .mini-lbl {
-    color: var(--muted);
-    font-size: 9px;
-    font-weight: 800;
+    font-size: 10px;
+    text-align: center;
+    font-weight: 500;
     text-transform: uppercase;
     letter-spacing: .7px;
 }
@@ -657,8 +692,9 @@ h1, h2, h3 {
 .insight-card .mini-num {
     color: var(--text);
     font-size: 24px;
-    font-weight: 900;
+    font-weight: 400;
     margin-top: 6px;
+    text-align: center;
 }
 
 .insight-panel {
@@ -669,7 +705,7 @@ h1, h2, h3 {
 .insight-panel h4 {
     color: var(--text);
     font-size: 13px;
-    font-weight: 850;
+    font-weight: 700;
     margin: 0 0 8px;
 }
 
@@ -734,7 +770,7 @@ h1, h2, h3 {
 .section-kicker {
     color: var(--muted);
     font-size: 9px;
-    font-weight: 850;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: .8px;
 }
@@ -742,7 +778,7 @@ h1, h2, h3 {
 .overview-cell .value {
     color: var(--text);
     font-size: 13px;
-    font-weight: 850;
+    font-weight: 600;
     margin-top: 6px;
     overflow-wrap: anywhere;
 }
@@ -815,7 +851,7 @@ div[data-testid="stTabs"] > div:last-child {
 [data-testid="stDataFrame"] [role="columnheader"] {
     background-color: #f8fafc !important;
     color: #344054 !important;
-    font-weight: 800 !important;
+    font-weight: 700 !important;
 }
 
 @media (max-width: 900px) {
@@ -850,7 +886,6 @@ div[data-testid="stTabs"] > div:last-child {
 
 .topbox p {
     max-width: 850px !important;
-    margin-top: 8px !important;
 }
 
 .topbox:after {
@@ -938,7 +973,7 @@ div[data-testid="stTabs"] > div:last-child {
     color: #344054;
     border-bottom: 1px solid #d6dee9;
     font-size: 10px;
-    font-weight: 850;
+    font-weight: 700;
     text-align: left;
     padding: 9px 10px;
     white-space: nowrap;
@@ -981,13 +1016,833 @@ div[data-testid="stTabs"] > div:last-child {
         margin-bottom: 8px;
     }
 }
+
+/* PWA MOBILE APP SHELL */
+html,
+body {
+    background: #f3f6fb !important;
+    overscroll-behavior-y: contain;
+}
+
+@media (max-width: 760px) {
+    .stApp {
+        background:
+            linear-gradient(180deg, #eef3f8 0%, rgba(238, 243, 248, 0) 180px),
+            #f3f6fb !important;
+    }
+
+    .block-container {
+        padding: calc(10px + env(safe-area-inset-top)) 10px calc(84px + env(safe-area-inset-bottom)) !important;
+        max-width: 100% !important;
+    }
+
+    .topbox {
+        border-radius: 14px !important;
+        padding: 16px 16px 15px !important;
+        margin: 2px 0 10px !important;
+        box-shadow: 0 12px 26px rgba(16, 24, 40, 0.09) !important;
+    }
+
+    .topbox:after {
+        position: static !important;
+        display: block !important;
+        margin-bottom: 8px !important;
+        font-size: 9px !important;
+    }
+
+    .topbox h1 {
+        font-size: 20px !important;
+        line-height: 1.12 !important;
+        max-width: 280px !important;
+    }
+
+    .topbox p {
+        font-size: 12px !important;
+        line-height: 1.45 !important;
+        margin-top: 8px !important;
+    }
+
+    [data-testid="stFileUploader"] {
+        border-radius: 13px !important;
+        padding: 10px !important;
+        margin-bottom: 10px !important;
+    }
+
+    [data-testid="stFileUploader"] section {
+        min-height: 76px !important;
+        border-radius: 11px !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    [data-testid="stFileUploader"] button {
+        min-height: 38px !important;
+        border-radius: 9px !important;
+        padding: 0 14px !important;
+    }
+
+    .overview-strip {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+        margin: 0 0 10px !important;
+    }
+
+    .overview-cell {
+        min-height: 58px !important;
+        padding: 10px !important;
+        border-radius: 11px !important;
+    }
+
+    .overview-cell .eyebrow,
+    .section-kicker {
+        font-size: 12px !important;
+    }
+
+    .overview-cell .value {
+        font-size: 12px !important;
+    }
+
+    .section-kicker {
+        margin: 8px 0 7px !important;
+    }
+
+    [data-testid="stHorizontalBlock"] {
+        gap: 8px !important;
+        flex-wrap: wrap !important;
+    }
+
+    [data-testid="column"]:has(.card) {
+        width: calc(50% - 4px) !important;
+        flex: 1 1 calc(50% - 4px) !important;
+        min-width: calc(50% - 4px) !important;
+    }
+
+    .card {
+        min-height: 82px !important;
+        padding: 11px !important;
+        border-radius: 12px !important;
+    }
+
+    .card:after {
+        width: 21px !important;
+        height: 21px !important;
+        right: 10px !important;
+        top: 11px !important;
+    }
+
+    .lbl {
+        font-size: 11px !important;
+        line-height: 1.2 !important;
+        max-width: calc(100% - 28px) !important;
+    }
+
+    .num {
+        font-size: 24px !important;
+        margin-top: 13px !important;
+    }
+
+    hr {
+        margin: 10px 0 !important;
+    }
+
+    .stTabs [data-baseweb="tab-list"] {
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        flex-wrap: nowrap !important;
+        justify-content: flex-start !important;
+        scroll-snap-type: x proximity;
+        -webkit-overflow-scrolling: touch;
+        padding: 5px !important;
+        border-radius: 13px !important;
+    }
+
+    .stTabs [data-baseweb="tab-list"]::-webkit-scrollbar {
+        display: none;
+    }
+
+    .stTabs [data-baseweb="tab"] {
+        min-width: max-content !important;
+        min-height: 38px !important;
+        padding: 8px 12px !important;
+        border-radius: 9px !important;
+        scroll-snap-align: start;
+    }
+
+    div[data-testid="stTabs"] > div:last-child {
+        padding: 12px !important;
+        border-radius: 13px !important;
+        margin-top: 8px !important;
+    }
+
+    h2, h3 {
+        font-size: 15px !important;
+        margin-bottom: 10px !important;
+    }
+
+    [data-testid="stMarkdownContainer"] p,
+    .stMarkdown p {
+        font-size: 11px !important;
+    }
+
+    .table-shell {
+        max-height: 62vh !important;
+        border-radius: 12px !important;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .light-table {
+        min-width: 680px;
+        font-size: 10.5px !important;
+    }
+
+    .light-table thead th {
+        padding: 8px 9px !important;
+        font-size: 11px !important;
+    }
+
+    .light-table tbody td {
+        padding: 8px 9px !important;
+    }
+
+    .stTextInput input,
+    .stMultiSelect [data-baseweb="select"] {
+        min-height: 40px !important;
+        border-radius: 10px !important;
+        font-size: 12px !important;
+    }
+
+    .insight-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+    }
+
+    .insight-card {
+        border-radius: 12px !important;
+        padding: 11px !important;
+    }
+
+    .insight-card .mini-num {
+        font-size: 21px !important;
+    }
+
+    .insight-panel {
+        border-radius: 12px !important;
+        padding: 12px !important;
+    }
+
+    .insight-panel h4 {
+        font-size: 13px !important;
+    }
+
+    .insight-panel li {
+        font-size: 12px !important;
+        line-height: 1.5 !important;
+    }
+
+}
+
+/* SIMPLE TAB NAVIGATION */
+.stTabs [data-baseweb="tab-list"] {
+    display: flex !important;
+    align-items: center;
+    gap: 4px !important;
+    padding: 5px !important;
+    background: #ffffff !important;
+    border: 1px solid #d6dee9 !important;
+    border-radius: 10px !important;
+    box-shadow: 0 8px 20px rgba(16, 24, 40, 0.06) !important;
+}
+
+.stTabs [data-baseweb="tab"] {
+    min-height: 34px !important;
+    padding: 7px 12px !important;
+    border-radius: 7px !important;
+    color: #475467 !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    background: transparent !important;
+    border: 1px solid transparent !important;
+}
+
+.stTabs [data-baseweb="tab"]:hover {
+    background: #f2f4f7 !important;
+    color: #101828 !important;
+}
+
+.stTabs [aria-selected="true"] {
+    background: #101828 !important;
+    color: #ffffff !important;
+    border-color: #101828 !important;
+}
+
+div[data-testid="stTabs"] > div:last-child {
+    border-radius: 10px !important;
+    border: 1px solid #d6dee9 !important;
+    background: #ffffff !important;
+    box-shadow: 0 10px 24px rgba(16, 24, 40, 0.06) !important;
+}
+
+@media (max-width: 760px) {
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 4px !important;
+        padding: 5px !important;
+        border-radius: 10px !important;
+        overflow-x: auto !important;
+        scrollbar-width: none;
+        box-shadow: 0 8px 20px rgba(16, 24, 40, 0.06) !important;
+    }
+
+    .stTabs [data-baseweb="tab-list"]::-webkit-scrollbar {
+        display: none;
+    }
+
+    .stTabs [data-baseweb="tab"] {
+        min-height: 36px !important;
+        padding: 7px 11px !important;
+        flex: 0 0 auto !important;
+        white-space: nowrap !important;
+    }
+}
+
+/* FINAL MOBILE-SAFE CLEANUP */
+.stApp,
+html,
+body {
+    background: #f7f9fc !important;
+    color: #101828 !important;
+}
+
+.topbox,
+[data-testid="stFileUploader"],
+.overview-cell,
+.card,
+div[data-testid="stTabs"] > div:last-child,
+.insight-card,
+.insight-panel,
+.table-shell {
+    background: #ffffff !important;
+    background-image: none !important;
+    border: 1px solid #d8e0ea !important;
+    box-shadow: none !important;
+}
+
+.topbox:before,
+.card:before,
+.card:after {
+    display: none !important;
+}
+
+.topbox:after {
+    color: #667085 !important;
+}
+
+.card:hover,
+.stTabs [data-baseweb="tab"]:hover,
+.light-table tbody tr:hover td {
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.card:hover {
+    border-color: #d8e0ea !important;
+}
+
+[data-testid="stFileUploader"] section {
+    background: #ffffff !important;
+    border: 1px dashed #c9d3e1 !important;
+}
+
+[data-testid="stFileUploader"] button {
+    box-shadow: none !important;
+}
+
+.stTabs [data-baseweb="tab-list"] {
+    background: #ffffff !important;
+    border: 1px solid #d8e0ea !important;
+    box-shadow: none !important;
+}
+
+.stTabs [data-baseweb="tab"] {
+    background: #ffffff !important;
+    color: #475467 !important;
+}
+
+.stTabs [data-baseweb="tab"]:hover {
+    background: #f7f9fc !important;
+    color: #101828 !important;
+}
+
+.stTabs [aria-selected="true"] {
+    background: #101828 !important;
+    color: #ffffff !important;
+    border-color: #101828 !important;
+}
+
+.table-shell {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+}
+
+.light-table {
+    width: max-content !important;
+    min-width: 100% !important;
+    table-layout: auto !important;
+    border-collapse: collapse !important;
+}
+
+.light-table thead th,
+.light-table tbody td {
+    white-space: nowrap !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+    padding: 8px 7px !important;
+    line-height: 1.35 !important;
+}
+
+.light-table thead th {
+    font-size: 9px !important;
+}
+
+.light-table tbody td {
+    font-size: 12px !important;
+}
+
+@media (max-width: 760px) {
+    .block-container {
+        padding: 8px 8px 70px !important;
+    }
+
+    .topbox {
+        padding: 13px !important;
+        margin-bottom: 8px !important;
+        border-radius: 10px !important;
+    }
+
+    .topbox h1 {
+        max-width: 100% !important;
+        font-size: 18px !important;
+    }
+
+    .topbox p {
+        font-size: 12px !important;
+    }
+
+    .overview-strip {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 6px !important;
+    }
+
+    .overview-cell {
+        min-height: auto !important;
+        padding: 8px !important;
+    }
+
+    .overview-cell .value {
+        font-size: 12px !important;
+    }
+
+    .card {
+        min-height: 72px !important;
+        padding: 9px !important;
+        border-radius: 9px !important;
+    }
+
+    .lbl {
+        max-width: 100% !important;
+        font-size: 7.5px !important;
+    }
+
+    .num {
+        font-size: 22px !important;
+        margin-top: 10px !important;
+    }
+
+    .stTabs [data-baseweb="tab-list"] {
+        padding: 4px !important;
+        gap: 3px !important;
+        border-radius: 9px !important;
+    }
+
+    .stTabs [data-baseweb="tab"] {
+        min-height: 32px !important;
+        padding: 6px 9px !important;
+        font-size: 10px !important;
+        border-radius: 6px !important;
+    }
+
+    div[data-testid="stTabs"] > div:last-child {
+        padding: 9px !important;
+        border-radius: 10px !important;
+    }
+
+    .table-shell {
+        max-height: 60vh !important;
+        border-radius: 9px !important;
+    }
+
+    .light-table {
+        width: max-content !important;
+        min-width: 100% !important;
+    }
+
+    .light-table thead th,
+    .light-table tbody td {
+        padding: 7px 5px !important;
+        white-space: nowrap !important;
+    }
+
+    .light-table thead th {
+        font-size: 11px !important;
+    }
+
+    .light-table tbody td {
+        font-size: 12px !important;
+    }
+}
+
+/* MOBILE EXECUTIVE SNAPSHOT ROWS */
+@media (max-width: 760px) {
+    [data-testid="column"]:has(.card) {
+        width: 100% !important;
+        flex: 1 1 100% !important;
+        min-width: 100% !important;
+    }
+
+    .card {
+        min-height: 54px !important;
+        padding: 12px 14px !important;
+        border-radius: 10px !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 12px !important;
+    }
+
+    .lbl {
+        color: #101828 !important;
+        font-size: 12px !important;
+        font-weight: 500 !important;
+        letter-spacing: 0 !important;
+        line-height: 1.25 !important;
+        text-transform: uppercase !important;
+        max-width: none !important;
+        flex: 1 1 auto !important;
+    }
+
+    .metric-row {
+        display: block !important;
+        flex: 0 0 auto !important;
+    }
+
+    .num {
+        font-size: 21px !important;
+        font-weight: 500 !important;
+        margin: 0 !important;
+        line-height: 1 !important;
+        text-align: right !important;
+        min-width: 52px !important;
+    }
+
+    .section-kicker {
+        font-size: 9px !important;
+        font-weight: 500 !important;
+        letter-spacing: .5px !important;
+        margin: 10px 0 7px !important;
+    }
+}
+
+/* FINAL MOBILE ALIGNMENT AND SPACING */
+@media (max-width: 760px) {
+    .block-container {
+        padding: 8px 8px 42px !important;
+    }
+
+    .stTabs {
+        margin-top: 4px !important;
+    }
+
+    .stTabs [data-baseweb="tab-list"] {
+        width: 100% !important;
+        border-radius: 9px !important;
+        padding: 4px !important;
+        gap: 3px !important;
+        background: #ffffff !important;
+        border: 1px solid #d8e0ea !important;
+        box-shadow: none !important;
+    }
+
+    .stTabs [data-baseweb="tab"] {
+        min-height: 32px !important;
+        padding: 6px 9px !important;
+        border-radius: 6px !important;
+        background: #ffffff !important;
+        color: #475467 !important;
+        border: 1px solid transparent !important;
+        font-size: 10px !important;
+        font-weight: 500 !important;
+    }
+
+    .stTabs [aria-selected="true"] {
+        background: #f2f4f7 !important;
+        color: #101828 !important;
+        border-color: #cfd8e5 !important;
+    }
+
+    div[data-testid="stTabs"] > div:last-child {
+        width: 100% !important;
+        padding: 9px !important;
+        margin-top: 6px !important;
+        border-radius: 9px !important;
+        border: 1px solid #d8e0ea !important;
+        box-shadow: none !important;
+    }
+
+    h2, h3,
+    [data-testid="stHeading"] {
+        margin-top: 0 !important;
+        margin-bottom: 8px !important;
+        padding-top: 0 !important;
+    }
+
+    h2, h3 {
+        font-size: 15px !important;
+        line-height: 1.25 !important;
+    }
+
+    .table-shell {
+        width: 100% !important;
+        margin: 0 !important;
+        border-radius: 8px !important;
+        border: 1px solid #d8e0ea !important;
+    }
+
+    .light-table {
+        min-width: 100% !important;
+    }
+
+    .light-table thead th {
+        padding: 7px 8px !important;
+        font-size: 11px !important;
+    }
+
+    .light-table tbody td {
+        padding: 7px 8px !important;
+        font-size: 12px !important;
+    }
+
+    [data-testid="stMarkdownContainer"],
+    [data-testid="stVerticalBlock"],
+    [data-testid="stElementContainer"] {
+        margin-top: 0 !important;
+    }
+}
+
+/* CUTE FLOATING GEOMETRIC BACKGROUND */
+.stApp {
+    position: relative;
+    overflow-x: hidden;
+    background:
+        radial-gradient(circle at 18% 22%, rgba(124, 58, 237, 0.045), transparent 30%),
+        radial-gradient(circle at 82% 16%, rgba(45, 212, 191, 0.04), transparent 28%),
+        #fbfcff !important;
+}
+
+.stApp:before,
+.stApp:after {
+    content: "";
+    position: fixed;
+    pointer-events: none;
+    z-index: 0;
+    will-change: transform;
+}
+
+.stApp:before {
+    width: 145px;
+    height: 145px;
+    left: 9%;
+    top: 42%;
+    border-radius: 22px;
+    background: rgba(168, 125, 255, 0.42);
+    border: 4px solid rgba(101, 61, 214, 0.34);
+    box-shadow:
+        330px 135px 0 36px rgba(168, 125, 255, 0.36),
+        760px -175px 0 -16px rgba(84, 218, 229, 0.46),
+        1040px 80px 0 42px rgba(168, 125, 255, 0.30),
+        805px 310px 0 -28px rgba(168, 125, 255, 0.34);
+    filter: drop-shadow(0 18px 28px rgba(124, 58, 237, 0.15));
+    opacity: .82;
+    transform: rotate(-15deg);
+    animation: cuteTileFloat 36s ease-in-out infinite alternate;
+}
+
+.stApp:after {
+    width: 28px;
+    height: 28px;
+    left: 17%;
+    top: 78%;
+    border-radius: 999px;
+    background: rgba(103, 232, 249, 0.56);
+    border: 5px solid rgba(6, 182, 212, 0.24);
+    box-shadow:
+        395px -190px 0 -2px rgba(168, 125, 255, 0.50),
+        505px -350px 0 2px rgba(103, 232, 249, 0.44),
+        1025px 12px 0 0 rgba(103, 232, 249, 0.46),
+        900px -235px 0 24px rgba(168, 125, 255, 0.24);
+    filter: drop-shadow(0 14px 24px rgba(6, 182, 212, 0.16));
+    opacity: .88;
+    animation: cuteDotFloat 30s ease-in-out infinite alternate;
+}
+
+[data-testid="stAppViewContainer"],
+.block-container {
+    position: relative;
+    z-index: 1;
+}
+
+@keyframes cuteTileFloat {
+    from {
+        transform: translate3d(-16px, -10px, 0) rotate(-15deg) scale(1);
+    }
+    to {
+        transform: translate3d(28px, 24px, 0) rotate(-9deg) scale(1.03);
+    }
+}
+
+@keyframes cuteDotFloat {
+    from {
+        transform: translate3d(14px, 12px, 0) scale(1);
+    }
+    to {
+        transform: translate3d(-22px, -18px, 0) scale(1.08);
+    }
+}
+
+@media (max-width: 760px) {
+    .stApp {
+        background:
+            radial-gradient(circle at 18% 18%, rgba(124, 58, 237, 0.04), transparent 34%),
+            #fbfcff !important;
+    }
+
+    .stApp:before {
+        width: 96px;
+        height: 96px;
+        left: 66%;
+        top: 18%;
+        border-radius: 18px;
+        border-width: 3px;
+        box-shadow:
+            -250px 290px 0 -10px rgba(168, 125, 255, 0.34),
+            -45px 430px 0 28px rgba(168, 125, 255, 0.25),
+            40px 655px 0 -18px rgba(84, 218, 229, 0.34);
+        opacity: .62;
+    }
+
+    .stApp:after {
+        width: 24px;
+        height: 24px;
+        left: 11%;
+        top: 58%;
+        border-width: 4px;
+        box-shadow:
+            250px -230px 0 0 rgba(103, 232, 249, 0.42),
+            285px 160px 0 -2px rgba(168, 125, 255, 0.42),
+            30px 410px 0 1px rgba(103, 232, 249, 0.40);
+        opacity: .68;
+    }
+}
+
+/* PAGE OPEN WELCOME ANIMATION */
+.welcome-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 45% 42%, rgba(124, 58, 237, 0.10), transparent 28%),
+        rgba(251, 252, 255, 0.92);
+    animation: welcomeOverlayOut 3.2s ease forwards;
+}
+
+.welcome-text {
+    color: #101828;
+    font-size: 34px;
+    font-weight: 650;
+    line-height: 1.15;
+    text-align: center;
+    padding: 0 18px;
+    transform: translateY(18px) scale(.96);
+    opacity: 0;
+    animation: welcomeTextIn 2.4s cubic-bezier(.2, .8, .2, 1) forwards;
+}
+
+.welcome-text span {
+    display: block;
+    margin-top: 10px;
+    color: #6d48c9;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+@keyframes welcomeTextIn {
+    0% {
+        opacity: 0;
+        transform: translateY(18px) scale(.96);
+    }
+    28%,
+    72% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-12px) scale(1.02);
+    }
+}
+
+@keyframes welcomeOverlayOut {
+    0%,
+    78% {
+        opacity: 1;
+        visibility: visible;
+    }
+    100% {
+        opacity: 0;
+        visibility: hidden;
+    }
+}
+
+@media (max-width: 760px) {
+    .welcome-text {
+        font-size: 25px;
+    }
+
+    .welcome-text span {
+        font-size: 11px;
+    }
+}
 </style>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+<div class="welcome-overlay">
+    <div class="welcome-text">
+        Welcome To Recruiter Automation
+        <span>Preparing your dashboard</span>
+    </div>
+</div>
 """, unsafe_allow_html=True)
 
 st.markdown("""
 <div class="topbox">
 <h1>Recruitment Excel Automation</h1>
-<p><strong>Production dashboard</strong> for exact recruitment counts, status movement, recruiter performance, pending action, rejection, drop, no-show, and final Excel reporting.</p>
+<p><strong>Production dashboard</strong> for exact recruitment counts, status movement, recruiter performance, pending action, rejection, drop, no-show, and lead review insights.</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -1154,12 +2009,6 @@ def selected_recruiter_name(review_df):
         return None
 
     names = review_df.iloc[:, 0].astype(str).tolist()
-    for name in names:
-        if name.strip().lower() == "jhansi":
-            return name
-    for name in names:
-        if "jhansi" in name.strip().lower():
-            return name
     return names[0] if names else None
 
 def recruiter_candidate_slice(df, recruiter_col, recruiter_name):
@@ -1188,14 +2037,14 @@ def build_recruiter_insights(name, stats):
 
     observations = []
     if yts >= 10 or yts_rate >= 25:
-        observations.append(f"{name}, the YTS bucket is high at {yts} candidates ({yts_rate}%). Prioritize same-day scheduling follow-ups and clear the oldest pending profiles first.")
+        observations.append(f"The YTS bucket is high at {yts} candidates ({yts_rate}%). Prioritize same-day scheduling follow-ups and clear the oldest pending profiles first.")
     elif yts > 0:
-        observations.append(f"{name}, there are {yts} YTS candidates pending. Keep the follow-up rhythm tight so this does not become aged pipeline.")
+        observations.append(f"There are {yts} YTS candidates pending. Keep the follow-up rhythm tight so this does not become aged pipeline.")
 
     if no_show >= 5 or no_show_rate >= 12:
-        observations.append(f"{name}, no-shows are a concern at {no_show} candidates ({no_show_rate}%). Strengthen candidate confirmation, availability validation, and reminder calls before interview slots are blocked.")
+        observations.append(f"No-shows are a concern at {no_show} candidates ({no_show_rate}%). Strengthen candidate confirmation, availability validation, and reminder calls before interview slots are blocked.")
     elif no_show > 0:
-        observations.append(f"{name}, you have {no_show} no-show cases. Reconfirm interest, location, notice period, compensation fit, and interview availability before moving candidates ahead.")
+        observations.append(f"There are {no_show} no-show cases. Reconfirm interest, location, notice period, compensation fit, and interview availability before moving candidates ahead.")
 
     if rejected >= 10 or reject_rate >= 35:
         observations.append(f"Rejected profiles are high at {rejected} ({reject_rate}%). Review screening quality, role fit, communication clarity, and whether candidates are being mapped to the right requirement.")
@@ -1218,7 +2067,7 @@ def build_recruiter_insights(name, stats):
         observations.append(f"{scheduled} candidate(s) are scheduled. Ensure every scheduled candidate has confirmation, interview details, and backup follow-up before the slot.")
 
     if not observations:
-        observations.append(f"{name}'s pipeline looks stable at the moment. Continue maintaining clean status updates and daily follow-up discipline.")
+        observations.append("This pipeline looks stable at the moment. Continue maintaining clean status updates and daily follow-up discipline.")
 
     actions = [
         f"Clear pending action first: {pending_action} candidate(s) are in YTS, scheduled, or offer-discussion stages.",
@@ -1259,64 +2108,6 @@ def filter_table(df, status_col, selected_status, search_text):
         ]
 
     return filtered
-
-def create_excel(df, summary, status_report, recruiter, pending, rejected, dropped, noshow, lead_review=None):
-    output = BytesIO()
-
-    with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
-        summary.to_excel(writer, sheet_name="Main Summary", index=False)
-        status_report.to_excel(writer, sheet_name="Status Counts", index=False)
-        recruiter.to_excel(writer, sheet_name="Recruiter Report", index=False)
-        pending.to_excel(writer, sheet_name="Pending Candidates", index=False)
-        rejected.to_excel(writer, sheet_name="Rejected Candidates", index=False)
-        dropped.to_excel(writer, sheet_name="Dropped Candidates", index=False)
-        noshow.to_excel(writer, sheet_name="No Show Candidates", index=False)
-        if lead_review is not None:
-            lead_review.to_excel(writer, sheet_name="Lead Review", index=False)
-        df.to_excel(writer, sheet_name="Full Clean Data", index=False)
-
-        workbook = writer.book
-        head = workbook.add_format({
-            "bold": True,
-            "font_color": "white",
-            "bg_color": "#111827",
-            "border": 1,
-            "align": "center"
-        })
-        cell = workbook.add_format({"border": 1, "align": "center"})
-        title = workbook.add_format({"bold": True, "font_size": 18, "font_color": "#111827"})
-
-        for ws in writer.sheets.values():
-            ws.set_row(0, 25, head)
-            ws.set_column(0, 60, 22)
-
-        dash = workbook.add_worksheet("Dashboard")
-        dash.write("A1", "Recruitment Automation Dashboard", title)
-        dash.write("A3", "Generated On", head)
-        dash.write("B3", datetime.now().strftime("%d-%m-%Y %I:%M %p"), cell)
-
-        dash.write("A5", "Metric", head)
-        dash.write("B5", "Count", head)
-
-        row = 5
-        for _, r in summary.iterrows():
-            dash.write(row, 0, r["Metric"], cell)
-            dash.write(row, 1, int(r["Count"]), cell)
-            row += 1
-
-        dash.write("D5", "Status", head)
-        dash.write("E5", "Count", head)
-
-        row = 5
-        for _, r in status_report.iterrows():
-            dash.write(row, 3, r["Status"], cell)
-            dash.write(row, 4, int(r["Count"]), cell)
-            row += 1
-
-        dash.set_column("A:E", 28)
-
-    output.seek(0)
-    return output
 
 if uploaded_file:
     df = load_file(uploaded_file)
@@ -1464,12 +2255,7 @@ if uploaded_file:
             recruiter_names = lead_review[recruiter_col].astype(str).tolist()
             default_name = selected_recruiter_name(lead_review)
             default_index = recruiter_names.index(default_name) if default_name in recruiter_names else 0
-
-            selected_recruiter = st.selectbox(
-                "Select recruiter for professional review",
-                recruiter_names,
-                index=default_index
-            )
+            selected_recruiter = recruiter_names[default_index]
 
             stats = lead_review[lead_review[recruiter_col].astype(str) == str(selected_recruiter)].iloc[0]
             observations, actions, questions = build_recruiter_insights(selected_recruiter, stats)
@@ -1506,7 +2292,7 @@ if uploaded_file:
             st.markdown(
                 f"""
                 <div class="insight-panel">
-                    <h4>Questions the Lead May Ask {html.escape(str(selected_recruiter))}</h4>
+                    <h4>Questions the Lead May Ask</h4>
                     <ul>{''.join(f'<li>{html.escape(item)}</li>' for item in questions)}</ul>
                 </div>
                 """,
@@ -1522,17 +2308,8 @@ if uploaded_file:
                     PENDING_STATUS + NO_SHOW_STATUS + DROP_STATUS + REJECT_STATUS + ["HR / Offer Discussion", "Verbal Offer Decline"]
                 )
             ]
-            st.subheader(f"Focus Candidates - {selected_recruiter}")
+            st.subheader("Focus Candidates")
             render_table(focus_rows)
 
-    excel_file = create_excel(df, summary, status_report, recruiter, pending, rejected, dropped, noshow, lead_review)
-
-    st.download_button(
-        "Download Complete Excel Report",
-        data=excel_file,
-        file_name="recruitment_count_report.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
-
 else:
-    st.info("Upload your Excel file to see all counts in browser.")
+    st.info("Upload your Excel file to see all counts.")
