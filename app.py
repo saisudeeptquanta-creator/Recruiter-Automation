@@ -51,6 +51,27 @@ st.markdown("""
     visibility: hidden;
 }
 
+/* STREAMLIT CLOUD BADGE / CREATOR PROFILE */
+a[href="https://streamlit.io/cloud"],
+a[href*="streamlit.io/cloud"],
+a[class*="_viewerBadge"],
+div[class*="_profileContainer"],
+div[class*="_profilePreview"],
+[data-testid="appCreatorAvatar"],
+[data-testid="appCreatorAvatar"] * {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    max-width: 0 !important;
+    max-height: 0 !important;
+    overflow: hidden !important;
+}
+
 /* HERO */
 .topbox {
     background:
