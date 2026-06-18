@@ -2377,7 +2377,7 @@ def render_reminder_center(candidates):
         .reminder-list {{
             display: grid;
             gap: 8px;
-            max-height: 365px;
+            max-height: 520px;
             overflow: auto;
             padding-right: 2px;
         }}
@@ -2450,6 +2450,10 @@ def render_reminder_center(candidates):
             line-height: 1.5;
         }}
         @media (max-width: 760px) {{
+            body {{
+                min-height: 1160px;
+                overflow: visible;
+            }}
             .reminder-wrap {{
                 padding: 11px;
             }}
@@ -2465,7 +2469,8 @@ def render_reminder_center(candidates):
                 justify-content: center;
             }}
             .reminder-list {{
-                max-height: 300px;
+                max-height: none;
+                overflow: visible;
             }}
         }}
         </style>
@@ -2917,7 +2922,7 @@ def render_reminder_center(candidates):
         }})();
         </script>
         """,
-        height=620,
+        height=1180,
     )
 
 def make_summary(status_report, total):
