@@ -15,9 +15,7 @@ st.markdown("""
     display: grid;
     place-items: center;
     pointer-events: none;
-    background:
-        radial-gradient(circle at 45% 42%, rgba(124, 58, 237, 0.10), transparent 28%),
-        #fbfcff;
+    background: radial-gradient(circle at 94% 6%, rgba(203, 120, 199, .46), transparent 20%), radial-gradient(circle at 6% 92%, rgba(112, 151, 235, .38), transparent 22%), radial-gradient(circle at 47% 42%, rgba(255, 219, 102, .34), transparent 17%), linear-gradient(135deg, #f8f8f8 0%, #eadcff 42%, #dff3ff 100%) !important;        #fbfcff;
     opacity: 1;
     visibility: visible;
     animation: welcomeOverlayHold 1.7s ease forwards;
@@ -352,7 +350,7 @@ div[class*="_profilePreview"],
     position: absolute;
     inset: auto 0 0 0;
     height: 2px;
-    background: linear-gradient(90deg, transparent, var(--gold), var(--cyan), transparent);
+    background: radial-gradient(circle at 94% 6%, rgba(203, 120, 199, .46), transparent 20%), radial-gradient(circle at 6% 92%, rgba(112, 151, 235, .38), transparent 22%), radial-gradient(circle at 47% 42%, rgba(255, 219, 102, .34), transparent 17%), linear-gradient(135deg, #f8f8f8 0%, #eadcff 42%, #dff3ff 100%) !important;        #fbfcff;
 }
 
 .topbox h1 {
@@ -518,7 +516,7 @@ div[class*="_profilePreview"],
 }
 
 .stTabs [aria-selected="true"] {
-    background: linear-gradient(180deg, #172238, #111a2b) !important;
+    background: radial-gradient(circle at 94% 6%, rgba(203, 120, 199, .46), transparent 20%), radial-gradient(circle at 6% 92%, rgba(112, 151, 235, .38), transparent 22%), radial-gradient(circle at 47% 42%, rgba(255, 219, 102, .34), transparent 17%), linear-gradient(135deg, #f8f8f8 0%, #eadcff 42%, #dff3ff 100%) !important;        #fbfcff;
     color: white !important;
     border-color: var(--gold) !important;
 }
