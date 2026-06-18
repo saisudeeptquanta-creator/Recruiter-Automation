@@ -2458,6 +2458,11 @@ def render_reminder_center(candidates):
                 return (localStorage.getItem(MOBILE_TOPIC_KEY) || "").trim().replace(/[^a-zA-Z0-9_-]/g, "");
             }}
 
+            function isWeakTopic(topic) {{
+                const weak = ["interview", "reminder", "recruiter", "test", "notification", "notifications"];
+                return !topic || topic.length < 18 || weak.includes(topic.toLowerCase());
+            }}
+
             function makeTopic() {{
                 const bytes = new Uint8Array(8);
                 if (window.crypto && window.crypto.getRandomValues) {{
@@ -2470,7 +2475,7 @@ def render_reminder_center(candidates):
 
             function ensureMobileTopic() {{
                 let topic = mobileTopic();
-                if (!topic) {{
+                if (isWeakTopic(topic)) {{
                     topic = makeTopic();
                     saveMobileTopic(topic);
                 }}
@@ -2741,8 +2746,8 @@ def render_reminder_center(candidates):
                     const status = document.getElementById("push-status");
                     if (status) {{
                         status.textContent = sent
-                            ? `Sent to ${{mobileTopic()}}. If the phone did not ring, subscribe the phone to this exact topic first.`
-                            : "Push send failed. Check the mobile push topic and try again.";
+                            ? "Test sent to your private phone receiver."
+                            : "Push send failed. Tap New Private Receiver and try again.";
                     }}
                 }});
                 requestPermission().then(() => {{
@@ -2814,15 +2819,15 @@ def render_reminder_center(candidates):
                         <div class="reminder-card">
                             <div class="push-setup">
                                 <div class="reminder-field">
-                                    <label>Mobile Push Topic</label>
-                                    <input id="rem-topic" value="${{escapeText(ensureMobileTopic())}}" placeholder="Example: recruiter_yourname_2026">
+                                    <label>Private Phone Receiver</label>
+                                    <input id="rem-topic" value="${{escapeText(ensureMobileTopic())}}" readonly>
                                 </div>
                                 <div class="push-actions">
-                                    <a id="push-open" class="push-link" href="${{escapeText(mobilePushUrl())}}" target="_blank" rel="noopener">Open Phone Receiver</a>
-                                    <button id="push-new" class="reminder-btn">New Topic</button>
+                                    <a id="push-open" class="push-link" href="${{escapeText(mobilePushUrl())}}" target="_blank" rel="noopener">Subscribe Phone</a>
+                                    <button id="push-new" class="reminder-btn">New Private Receiver</button>
                                 </div>
                                 <img id="push-qr" class="push-qr" src="${{escapeText(qrUrl())}}" alt="Mobile push receiver QR">
-                                <div id="push-status" class="push-status">Use the receiver link or QR on the phone once, then Test.</div>
+                                <div id="push-status" class="push-status">Subscribe this phone receiver once, then Test.</div>
                             </div>
                             <div class="reminder-field">
                                 <label>Candidate</label>
