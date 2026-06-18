@@ -2038,6 +2038,65 @@ def reminder_candidates(df, status_col, recruiter_col):
 
 def render_reminder_center(candidates):
     candidates_json = json.dumps(candidates, ensure_ascii=True).replace("</", "<\\/")
+    parent_notifier_script = """
+(function () {
+    if (window.RecruiterPanelNotify) return;
+    const SW_URL = "/app/static/reminder-sw.js";
+
+    async function registerWorker() {
+        if (!("serviceWorker" in navigator)) {
+            throw new Error("Service workers are not supported");
+        }
+        const reg = await navigator.serviceWorker.register(SW_URL, { updateViaCache: "none" });
+        try {
+            await reg.update();
+        } catch (e) {}
+        return reg;
+    }
+
+    window.RecruiterPanelNotify = {
+        permission() {
+            if (!("Notification" in window)) return "unsupported";
+            return Notification.permission;
+        },
+        async request() {
+            if (!("Notification" in window)) return "unsupported";
+            await registerWorker();
+            if (Notification.permission === "default") {
+                await Notification.requestPermission();
+            }
+            return Notification.permission;
+        },
+        async show(payload) {
+            if (!("Notification" in window)) {
+                throw new Error("Notifications are not supported");
+            }
+            await registerWorker();
+            if (Notification.permission === "default") {
+                await Notification.requestPermission();
+            }
+            if (Notification.permission !== "granted") {
+                throw new Error("Notification permission is " + Notification.permission);
+            }
+            const reg = await registerWorker();
+            await reg.showNotification(payload.title || "Recruitment reminder", {
+                body: payload.body || "Recruitment reminder due now.",
+                icon: "/app/static/icon.png",
+                badge: "/app/static/icon.png",
+                tag: (payload.tag || "recruiter-reminder") + "-" + Date.now(),
+                renotify: true,
+                requireInteraction: true,
+                silent: false,
+                vibrate: [260, 120, 260, 120, 480],
+                timestamp: Date.now(),
+                data: { url: payload.url || "/" }
+            });
+            return true;
+        }
+    };
+})();
+"""
+    parent_notifier_json = json.dumps(parent_notifier_script, ensure_ascii=True).replace("</", "<\\/")
     components.html(
         f"""
         <div id="reminder-app"></div>
@@ -2270,11 +2329,27 @@ def render_reminder_center(candidates):
         <script>
         (function () {{
             const CANDIDATES = {candidates_json};
+            const PARENT_NOTIFIER_SCRIPT = {parent_notifier_json};
             const KEY = "recruiterAutomation.reminders.v1";
             const FIRED_KEY = "recruiterAutomation.fired.v1";
             const SW_URL = "/app/static/reminder-sw.js";
             const root = document.getElementById("reminder-app");
             let audioReady = false;
+
+            function parentNotifier() {{
+                try {{
+                    const target = window.parent && window.parent !== window ? window.parent : window;
+                    if (!target.RecruiterPanelNotify) {{
+                        const script = target.document.createElement("script");
+                        script.id = "recruiter-panel-notifier";
+                        script.textContent = PARENT_NOTIFIER_SCRIPT;
+                        (target.document.head || target.document.documentElement).appendChild(script);
+                    }}
+                    return target.RecruiterPanelNotify || null;
+                }} catch (e) {{
+                    return null;
+                }}
+            }}
 
             function nowLocalValue(minutesAhead) {{
                 const date = new Date(Date.now() + minutesAhead * 60000);
@@ -2334,6 +2409,8 @@ def render_reminder_center(candidates):
             }}
 
             function permission() {{
+                const notifier = parentNotifier();
+                if (notifier && notifier.permission) return notifier.permission();
                 const api = notificationApi();
                 return api ? api.permission : "unsupported";
             }}
@@ -2384,6 +2461,12 @@ def render_reminder_center(candidates):
             async function requestPermission() {{
                 audioReady = true;
                 setFramePermissions();
+                const notifier = parentNotifier();
+                if (notifier && notifier.request) {{
+                    const result = await notifier.request();
+                    render();
+                    return result;
+                }}
                 await registerWorker();
                 const api = notificationApi();
                 if (!api) {{
@@ -2400,22 +2483,14 @@ def render_reminder_center(candidates):
             }}
 
             async function showSystemNotification(item) {{
-                const api = notificationApi();
-                if (!api || api.permission !== "granted") return false;
                 try {{
-                    const reg = await registerWorker();
-                    if (!reg || !reg.showNotification) return false;
-                    await reg.showNotification(item.title || "Recruitment reminder", {{
+                    const notifier = parentNotifier();
+                    if (!notifier || !notifier.show) return false;
+                    await notifier.show({{
+                        title: item.title || "Recruitment reminder",
                         body: item.body || "Recruitment reminder due now.",
-                        icon: "/app/static/icon.png",
-                        badge: "/app/static/icon.png",
                         tag: "recruiter-reminder-" + item.id + "-" + Date.now(),
-                        renotify: true,
-                        requireInteraction: true,
-                        silent: false,
-                        vibrate: [260, 120, 260, 120, 480],
-                        timestamp: Date.now(),
-                        data: {{ url: "/" }}
+                        url: "/"
                     }});
                     return true;
                 }} catch (e) {{
