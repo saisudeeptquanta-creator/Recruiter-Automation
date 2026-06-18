@@ -20,12 +20,7 @@ st.markdown("""
         #fbfcff;
     opacity: 1;
     visibility: visible;
-    transition: opacity .65s ease, visibility .65s ease;
-}
-
-.welcome-overlay.welcome-hide {
-    opacity: 0;
-    visibility: hidden;
+    animation: welcomeOverlayHold 1.7s ease forwards;
 }
 
 .welcome-text {
@@ -38,7 +33,7 @@ st.markdown("""
     padding: 0 18px;
     transform: translateY(18px) scale(.96);
     opacity: 0;
-    animation: welcomeTextIn 1.2s cubic-bezier(.2, .8, .2, 1) forwards;
+    animation: welcomeTextIn .75s cubic-bezier(.2, .8, .2, 1) forwards;
 }
 
 .welcome-text span {
@@ -47,6 +42,16 @@ st.markdown("""
     color: #6d48c9;
     font-size: 13px;
     font-weight: 500;
+}
+
+.welcome-spinner {
+    width: 24px;
+    height: 24px;
+    margin: 18px auto 0;
+    border-radius: 999px;
+    border: 3px solid rgba(109, 72, 201, 0.16);
+    border-top-color: #6d48c9;
+    animation: welcomeSpin .8s linear infinite;
 }
 
 @keyframes welcomeTextIn {
@@ -61,6 +66,24 @@ st.markdown("""
     }
 }
 
+@keyframes welcomeSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes welcomeOverlayHold {
+    0%,
+    82% {
+        opacity: 1;
+        visibility: visible;
+    }
+    100% {
+        opacity: 0;
+        visibility: hidden;
+    }
+}
+
 @media (max-width: 760px) {
     .welcome-text {
         font-size: 25px;
@@ -69,47 +92,25 @@ st.markdown("""
     .welcome-text span {
         font-size: 11px;
     }
+
+    .welcome-spinner {
+        width: 21px;
+        height: 21px;
+        border-width: 2.5px;
+    }
 }
 </style>
+""", unsafe_allow_html=True)
+
+st.markdown("""
 <div id="welcome-overlay" class="welcome-overlay">
     <div class="welcome-text">
         Welcome To Recruiter Automation
         <span>Preparing your dashboard</span>
+        <div class="welcome-spinner"></div>
     </div>
 </div>
 """, unsafe_allow_html=True)
-
-components.html(
-    """
-    <script>
-    (function () {
-        function hideWelcome() {
-            try {
-                const doc = window.parent.document;
-                const overlay = doc.getElementById('welcome-overlay');
-                if (!overlay) return;
-                setTimeout(function () {
-                    overlay.classList.add('welcome-hide');
-                }, 2000);
-            } catch (e) {}
-        }
-
-        try {
-            if (window.parent.document.readyState === 'complete') {
-                hideWelcome();
-            } else {
-                window.parent.addEventListener('load', hideWelcome, { once: true });
-                setTimeout(hideWelcome, 8000);
-            }
-        } catch (e) {
-            setTimeout(hideWelcome, 3000);
-        }
-    })();
-    </script>
-    """,
-    height=0,
-    width=0,
-)
 
 components.html(
     """
