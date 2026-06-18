@@ -2273,7 +2273,6 @@ def render_reminder_center(candidates):
             const KEY = "recruiterAutomation.reminders.v1";
             const FIRED_KEY = "recruiterAutomation.fired.v1";
             const SW_URL = "/app/static/reminder-sw.js";
-            const PERMISSION_HELPER_URL = "/app/static/notification-permission.html";
             const root = document.getElementById("reminder-app");
             let audioReady = false;
 
@@ -2382,24 +2381,6 @@ def render_reminder_center(candidates):
                 if (nav.vibrate) nav.vibrate([220, 90, 220, 90, 420]);
             }}
 
-            function openPermissionHelper(mode) {{
-                const target = parentWindow();
-                const url = mode ? `${{PERMISSION_HELPER_URL}}?mode=${{encodeURIComponent(mode)}}` : PERMISSION_HELPER_URL;
-                try {{
-                    const helper = target.open(url, "recruiterNotificationPermission", "popup,width=420,height=640");
-                    if (helper) {{
-                        helper.focus();
-                        return true;
-                    }}
-                }} catch (e) {{}}
-                try {{
-                    target.location.href = url;
-                    return true;
-                }} catch (e) {{
-                    return false;
-                }}
-            }}
-
             async function requestPermission() {{
                 audioReady = true;
                 setFramePermissions();
@@ -2414,9 +2395,6 @@ def render_reminder_center(candidates):
                         await api.requestPermission();
                     }} catch (e) {{}}
                 }}
-                if (api.permission === "default") {{
-                    openPermissionHelper();
-                }}
                 render();
                 return api.permission;
             }}
@@ -2429,14 +2407,18 @@ def render_reminder_center(candidates):
                     const reg = await registerWorker();
                     if (!reg) return false;
                     const readyReg = nav.serviceWorker && nav.serviceWorker.ready ? await nav.serviceWorker.ready : reg;
-                    const worker = readyReg.active || readyReg.waiting || readyReg.installing;
-                    if (worker) {{
-                        worker.postMessage({{
-                            type: "SHOW_RECRUITER_NOTIFICATION",
-                            title: item.title || "Recruitment reminder",
+                    if (readyReg && readyReg.showNotification) {{
+                        await readyReg.showNotification(item.title || "Recruitment reminder", {{
                             body: item.body || "Recruitment reminder due now.",
-                            tag: "recruiter-reminder-" + item.id,
-                            url: "/"
+                            icon: "/app/static/icon.png",
+                            badge: "/app/static/icon.png",
+                            tag: "recruiter-reminder-" + item.id + "-" + Date.now(),
+                            renotify: true,
+                            requireInteraction: true,
+                            silent: false,
+                            vibrate: [260, 120, 260, 120, 480],
+                            timestamp: Date.now(),
+                            data: {{ url: "/" }}
                         }});
                         return true;
                     }}
@@ -2568,7 +2550,21 @@ def render_reminder_center(candidates):
 
             function testReminder() {{
                 audioReady = true;
-                openPermissionHelper("test");
+                requestPermission().then(() => {{
+                    showSystemNotification({{
+                        id: "test-" + Date.now(),
+                        title: "Test recruitment reminder",
+                        body: "This is a sample reminder in your phone notification panel.",
+                        dueAt: new Date().toISOString()
+                    }}).then((shown) => {{
+                        if (!shown) {{
+                            showPopup({{
+                                title: "Notification not enabled",
+                                body: "Open browser site settings and allow notifications for this app."
+                            }});
+                        }}
+                    }});
+                }});
             }}
 
             function statusHtml() {{
@@ -3076,31 +3072,6 @@ if uploaded_file:
 
     with tab8:
         st.subheader("Realtime Mobile Browser Reminders")
-        st.markdown(
-            """
-            <a class="notify-enable-btn" href="/app/static/notification-permission.html" target="_blank" rel="noopener">
-                Allow Notifications
-            </a>
-            <style>
-            .notify-enable-btn {
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                min-height: 42px;
-                padding: 0 16px;
-                margin: 0 0 12px;
-                border-radius: 8px;
-                border: 1px solid rgba(46, 211, 161, .55);
-                background: linear-gradient(135deg, #176d60, #1e5f9b);
-                color: #ffffff !important;
-                font-size: 13px;
-                font-weight: 800;
-                text-decoration: none !important;
-            }
-            </style>
-            """,
-            unsafe_allow_html=True,
-        )
         render_reminder_center(reminder_candidates(df, status_col, recruiter_col))
 
 else:
