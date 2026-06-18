@@ -97,7 +97,11 @@
         async function registerWorker() {
             if (!("serviceWorker" in navigator)) return null;
             try {
-                return await navigator.serviceWorker.register(workerUrl);
+                const reg = await navigator.serviceWorker.register(workerUrl, { updateViaCache: "none" });
+                try {
+                    await reg.update();
+                } catch (e) {}
+                return reg;
             } catch (e) {
                 return null;
             }
@@ -116,19 +120,29 @@
             if (Notification.permission === "granted") {
                 try {
                     const reg = await registerWorker();
-                    const options = {
-                        body: "Recruiter reminders are enabled.",
-                        icon: "/app/static/icon.png",
-                        badge: "/app/static/icon.png",
-                        tag: "recruiter-reminders-enabled",
-                        renotify: true,
-                        requireInteraction: false,
-                        data: { url: "/" }
-                    };
-                    if (reg && reg.showNotification) {
-                        await reg.showNotification("Recruiter Automation", options);
-                    } else {
-                        new Notification("Recruiter Automation", options);
+                    const readyReg = navigator.serviceWorker && navigator.serviceWorker.ready ? await navigator.serviceWorker.ready : reg;
+                    const worker = readyReg && (readyReg.active || readyReg.waiting || readyReg.installing);
+                    if (worker) {
+                        worker.postMessage({
+                            type: "SHOW_RECRUITER_NOTIFICATION",
+                            title: "Recruiter Automation",
+                            body: "Recruiter reminders are enabled.",
+                            tag: "recruiter-reminders-enabled",
+                            url: "/"
+                        });
+                    } else if (reg && reg.showNotification) {
+                        await reg.showNotification("Recruiter Automation", {
+                            body: "Recruiter reminders are enabled.",
+                            icon: "/app/static/icon.png",
+                            badge: "/app/static/icon.png",
+                            tag: "recruiter-reminders-enabled",
+                            renotify: true,
+                            requireInteraction: true,
+                            silent: false,
+                            vibrate: [260, 120, 260, 120, 480],
+                            timestamp: Date.now(),
+                            data: { url: "/" }
+                        });
                     }
                 } catch (e) {}
                 setTimeout(() => {

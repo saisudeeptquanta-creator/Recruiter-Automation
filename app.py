@@ -2349,7 +2349,9 @@ def render_reminder_center(candidates):
                 const nav = window.parent && window.parent.navigator ? window.parent.navigator : navigator;
                 if (!("serviceWorker" in nav)) return null;
                 try {{
-                    return await nav.serviceWorker.register(SW_URL);
+                    const reg = await nav.serviceWorker.register(SW_URL, {{ updateViaCache: "none" }});
+                    try {{ await reg.update(); }} catch (e) {{}}
+                    return reg;
                 }} catch (e) {{
                     return null;
                 }}
@@ -2421,26 +2423,49 @@ def render_reminder_center(candidates):
             async function showSystemNotification(item) {{
                 const api = notificationApi();
                 if (!api || api.permission !== "granted") return false;
-                const options = {{
-                    body: item.body || "Recruitment reminder due now.",
-                    icon: "/app/static/icon.png",
-                    badge: "/app/static/icon.png",
-                    tag: "recruiter-reminder-" + item.id,
-                    renotify: true,
-                    requireInteraction: true,
-                    data: {{ url: "/" }}
-                }};
-                const reg = await registerWorker();
+                const nav = window.parent && window.parent.navigator ? window.parent.navigator : navigator;
                 try {{
-                    if (reg && reg.showNotification) {{
-                        await reg.showNotification(item.title || "Recruitment reminder", options);
-                    }} else {{
-                        new api(item.title || "Recruitment reminder", options);
+                    const reg = await registerWorker();
+                    if (!reg) return false;
+                    const readyReg = nav.serviceWorker && nav.serviceWorker.ready ? await nav.serviceWorker.ready : reg;
+                    const worker = readyReg.active || readyReg.waiting || readyReg.installing;
+                    if (worker) {{
+                        worker.postMessage({{
+                            type: "SHOW_RECRUITER_NOTIFICATION",
+                            title: item.title || "Recruitment reminder",
+                            body: item.body || "Recruitment reminder due now.",
+                            tag: "recruiter-reminder-" + item.id,
+                            url: "/"
+                        }});
+                        return true;
                     }}
-                    return true;
                 }} catch (e) {{
                     try {{
-                        new api(item.title || "Recruitment reminder", options);
+                        const reg = await registerWorker();
+                        if (reg && reg.showNotification) {{
+                            await reg.showNotification(item.title || "Recruitment reminder", {{
+                                body: item.body || "Recruitment reminder due now.",
+                                icon: "/app/static/icon.png",
+                                badge: "/app/static/icon.png",
+                                tag: "recruiter-reminder-" + item.id,
+                                renotify: true,
+                                requireInteraction: true,
+                                silent: false,
+                                vibrate: [260, 120, 260, 120, 480],
+                                timestamp: Date.now(),
+                                data: {{ url: "/" }}
+                            }});
+                            return true;
+                        }}
+                    }} catch (err) {{}}
+                    try {{
+                        new api(item.title || "Recruitment reminder", {{
+                            body: item.body || "Recruitment reminder due now.",
+                            icon: "/app/static/icon.png",
+                            tag: "recruiter-reminder-" + item.id,
+                            requireInteraction: true,
+                            silent: false
+                        }});
                         return true;
                     }} catch (err) {{
                         return false;
@@ -2463,8 +2488,8 @@ def render_reminder_center(candidates):
                 if (fired[item.id]) return;
                 fired[item.id] = new Date().toISOString();
                 saveFired(fired);
-                showPopup(item);
-                await showSystemNotification(item);
+                const shown = await showSystemNotification(item);
+                if (!shown) showPopup(item);
                 render();
             }}
 
