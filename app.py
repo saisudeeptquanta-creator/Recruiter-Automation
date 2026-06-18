@@ -2045,13 +2045,43 @@ def render_reminder_center(candidates):
 
     async function registerWorker() {
         if (!("serviceWorker" in navigator)) {
-            throw new Error("Service workers are not supported");
+            return null;
         }
-        const reg = await navigator.serviceWorker.register(SW_URL, { updateViaCache: "none" });
         try {
-            await reg.update();
-        } catch (e) {}
-        return reg;
+            const head = await fetch(SW_URL, { method: "HEAD", cache: "no-store" });
+            const contentType = head.headers.get("content-type") || "";
+            if (!contentType.includes("javascript")) return null;
+        } catch (e) {
+            return null;
+        }
+        try {
+            const reg = await navigator.serviceWorker.register(SW_URL, { updateViaCache: "none" });
+            try {
+                await reg.update();
+            } catch (e) {}
+            return reg;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function iconUrl() {
+        return new URL("/app/static/icon.png", window.location.origin).href;
+    }
+
+    async function showWithBrowserNotification(payload) {
+        const note = new Notification(payload.title || "Recruitment reminder", {
+            body: payload.body || "Recruitment reminder due now.",
+            icon: iconUrl(),
+            tag: (payload.tag || "recruiter-reminder") + "-" + Date.now(),
+            requireInteraction: true,
+            silent: false
+        });
+        note.onclick = function () {
+            window.focus();
+            note.close();
+        };
+        return true;
     }
 
     window.RecruiterPanelNotify = {
@@ -2061,17 +2091,16 @@ def render_reminder_center(candidates):
         },
         async request() {
             if (!("Notification" in window)) return "unsupported";
-            await registerWorker();
             if (Notification.permission === "default") {
                 await Notification.requestPermission();
             }
+            registerWorker();
             return Notification.permission;
         },
         async show(payload) {
             if (!("Notification" in window)) {
                 throw new Error("Notifications are not supported");
             }
-            await registerWorker();
             if (Notification.permission === "default") {
                 await Notification.requestPermission();
             }
@@ -2079,19 +2108,22 @@ def render_reminder_center(candidates):
                 throw new Error("Notification permission is " + Notification.permission);
             }
             const reg = await registerWorker();
-            await reg.showNotification(payload.title || "Recruitment reminder", {
-                body: payload.body || "Recruitment reminder due now.",
-                icon: "/app/static/icon.png",
-                badge: "/app/static/icon.png",
-                tag: (payload.tag || "recruiter-reminder") + "-" + Date.now(),
-                renotify: true,
-                requireInteraction: true,
-                silent: false,
-                vibrate: [260, 120, 260, 120, 480],
-                timestamp: Date.now(),
-                data: { url: payload.url || "/" }
-            });
-            return true;
+            if (reg && reg.showNotification) {
+                await reg.showNotification(payload.title || "Recruitment reminder", {
+                    body: payload.body || "Recruitment reminder due now.",
+                    icon: iconUrl(),
+                    badge: iconUrl(),
+                    tag: (payload.tag || "recruiter-reminder") + "-" + Date.now(),
+                    renotify: true,
+                    requireInteraction: true,
+                    silent: false,
+                    vibrate: [260, 120, 260, 120, 480],
+                    timestamp: Date.now(),
+                    data: { url: payload.url || "/" }
+                });
+                return true;
+            }
+            return showWithBrowserNotification(payload);
         }
     };
 })();
