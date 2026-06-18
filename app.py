@@ -1,9 +1,85 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 from io import BytesIO
 from datetime import datetime
 
 st.set_page_config(page_title="Recruitment Count Dashboard", page_icon=":clipboard:", layout="wide")
+
+components.html(
+    """
+    <script>
+    (function () {
+        const selectors = [
+            'a[href="https://streamlit.io/cloud"]',
+            'a[href*="streamlit.io/cloud"]',
+            'a[class*="_viewerBadge"]',
+            'a[class*="viewerBadge"]',
+            'div[class*="_profileContainer"]',
+            'div[class*="profileContainer"]',
+            'div[class*="_profilePreview"]',
+            'div[class*="profilePreview"]',
+            '[data-testid="appCreatorAvatar"]',
+            'a[href*="share.streamlit.io/user"]'
+        ];
+
+        const css = `
+            ${selectors.join(',')} {
+                display: none !important;
+                visibility: hidden !important;
+                opacity: 0 !important;
+                pointer-events: none !important;
+                width: 0 !important;
+                height: 0 !important;
+                min-width: 0 !important;
+                min-height: 0 !important;
+                max-width: 0 !important;
+                max-height: 0 !important;
+                overflow: hidden !important;
+                transform: scale(0) !important;
+            }
+        `;
+
+        function injectStyle(doc) {
+            if (!doc || doc.getElementById('hide-streamlit-cloud-badge')) return;
+            const style = doc.createElement('style');
+            style.id = 'hide-streamlit-cloud-badge';
+            style.textContent = css;
+            (doc.head || doc.documentElement).appendChild(style);
+        }
+
+        function hideIn(doc) {
+            if (!doc) return;
+            injectStyle(doc);
+            selectors.forEach((selector) => {
+                doc.querySelectorAll(selector).forEach((el) => {
+                    const target = el.closest('a, div') || el;
+                    target.style.setProperty('display', 'none', 'important');
+                    target.style.setProperty('visibility', 'hidden', 'important');
+                    target.style.setProperty('opacity', '0', 'important');
+                    target.style.setProperty('pointer-events', 'none', 'important');
+                    target.style.setProperty('width', '0', 'important');
+                    target.style.setProperty('height', '0', 'important');
+                    target.style.setProperty('overflow', 'hidden', 'important');
+                    target.setAttribute('aria-hidden', 'true');
+                });
+            });
+        }
+
+        function hideBadges() {
+            hideIn(document);
+            try { hideIn(window.parent.document); } catch (e) {}
+            try { hideIn(window.top.document); } catch (e) {}
+        }
+
+        hideBadges();
+        setInterval(hideBadges, 500);
+    })();
+    </script>
+    """,
+    height=0,
+    width=0,
+)
 
 st.markdown("""
 <style>
