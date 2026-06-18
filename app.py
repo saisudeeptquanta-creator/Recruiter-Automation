@@ -755,9 +755,7 @@ h1, h2, h3 {
 }
 
 .stTabs [aria-selected="true"] {
-    background: #101828 !important;
     color: #ffffff !important;
-    border-color: #101828 !important;
 }
 
 [data-testid="stDataFrame"] {
@@ -1385,9 +1383,7 @@ body {
 }
 
 .stTabs [aria-selected="true"] {
-    background: #101828 !important;
     color: #ffffff !important;
-    border-color: #101828 !important;
 }
 
 div[data-testid="stTabs"] > div:last-child {
@@ -1524,11 +1520,6 @@ div[data-testid="stTabs"] > div:last-child,
     color: #101828 !important;
 }
 
-.stTabs [aria-selected="true"] {
-    background: #101828 !important;
-    color: #ffffff !important;
-    border-color: #101828 !important;
-}
 
 .table-shell {
     width: 100% !important;
@@ -1736,12 +1727,6 @@ div[data-testid="stTabs"] > div:last-child,
         border: 1px solid transparent !important;
         font-size: 10px !important;
         font-weight: 500 !important;
-    }
-
-    .stTabs [aria-selected="true"] {
-        background: #f2f4f7 !important;
-        color: #101828 !important;
-        border-color: #cfd8e5 !important;
     }
 
     div[data-testid="stTabs"] > div:last-child {
