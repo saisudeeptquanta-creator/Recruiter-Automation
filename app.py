@@ -1902,20 +1902,21 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-uploaded_file = st.file_uploader("Upload Recruitment Excel File", type=["xlsx", "xls", "csv"])
+st.markdown('<div class="section-kicker">Upload Recruitment File</div>', unsafe_allow_html=True)
 
-with st.expander("Office laptop upload fix", expanded=False):
+with st.expander("Excel / CSV upload", expanded=True):
     components.html(
         """
         <div style="font-family: Inter, system-ui, sans-serif; color:#101828;">
-            <input id="office-file" type="file" accept=".xlsx,.xls,.csv" style="width:100%; margin-bottom:10px;">
-            <textarea id="office-output" readonly placeholder="Encoded file will appear here after choosing a file."
-                style="width:100%; height:130px; border:1px solid #d6dee9; border-radius:8px; padding:10px; font-size:12px;"></textarea>
+            <input id="office-file" type="file" accept=".xlsx,.xls,.csv"
+                style="width:100%; margin-bottom:10px; border:1px solid #d6dee9; border-radius:8px; padding:10px; background:#fff;">
+            <textarea id="office-output" readonly placeholder="Choose the Excel/CSV file. Encoded text will appear here."
+                style="width:100%; height:150px; border:1px solid #d6dee9; border-radius:8px; padding:10px; font-size:12px;"></textarea>
             <button id="office-copy" type="button"
                 style="margin-top:8px; min-height:34px; padding:0 12px; border:1px solid #2457d6; border-radius:8px; background:#2457d6; color:white; font-weight:700;">
-                Copy encoded file
+                Copy File Data
             </button>
-            <div id="office-status" style="margin-top:8px; font-size:12px; color:#667085;"></div>
+            <div id="office-status" style="margin-top:8px; font-size:12px; color:#667085;">Choose file, copy data, paste below.</div>
         </div>
         <script>
         const fileInput = document.getElementById("office-file");
@@ -1930,7 +1931,7 @@ with st.expander("Office laptop upload fix", expanded=False):
             reader.onload = () => {
                 const base64 = String(reader.result).split(",")[1] || "";
                 output.value = `${file.name}|${base64}`;
-                status.textContent = "Encoded. Copy it and paste below.";
+                status.textContent = "File ready. Click Copy File Data, then paste below.";
             };
             reader.onerror = () => {
                 status.textContent = "Could not read this file.";
@@ -1951,13 +1952,13 @@ with st.expander("Office laptop upload fix", expanded=False):
         });
         </script>
         """,
-        height=245,
+        height=270,
     )
     encoded_upload = st.text_area(
-        "Paste encoded file here",
+        "Paste copied file data here",
         key="encoded_upload",
-        height=90,
-        placeholder="Paste the copied encoded file here if normal upload shows 403.",
+        height=110,
+        placeholder="Paste copied file data here.",
     )
 
 STATUS_ORDER = [
@@ -3110,13 +3111,9 @@ if "encoded_upload" in st.session_state and st.session_state.encoded_upload.stri
     except Exception:
         st.error("Encoded file could not be read. Copy the full encoded text and paste again.")
 
-if uploaded_file or encoded_df is not None:
-    if encoded_df is not None:
-        df = encoded_df
-        dataset_name = encoded_filename
-    else:
-        df = load_file(uploaded_file)
-        dataset_name = uploaded_file.name
+if encoded_df is not None:
+    df = encoded_df
+    dataset_name = encoded_filename
 
     df = clean_df(df)
 
