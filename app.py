@@ -147,8 +147,7 @@ components.html(
             div[data-testid="stElementContainer"]:has(iframe[height="0"]),
             div[data-testid="stElementContainer"]:has(iframe[width="0"]),
             div[data-testid="stElementContainer"][width="0px"],
-            div[data-testid="stElementContainer"][height="0px"],
-            div[data-testid="stElementContainer"]:has(iframe[data-testid="stIFrame"][title="st.iframe"]) {
+            div[data-testid="stElementContainer"][height="0px"] {
                 display: none !important;
                 visibility: hidden !important;
                 height: 0 !important;
@@ -292,8 +291,7 @@ div[data-testid="stElementContainer"]:has(style),
 div[data-testid="stElementContainer"]:has(iframe[height="0"]),
 div[data-testid="stElementContainer"]:has(iframe[width="0"]),
 div[data-testid="stElementContainer"][width="0px"],
-div[data-testid="stElementContainer"][height="0px"],
-div[data-testid="stElementContainer"]:has(iframe[data-testid="stIFrame"][title="st.iframe"]) {
+div[data-testid="stElementContainer"][height="0px"] {
     display: none !important;
     visibility: hidden !important;
     height: 0 !important;
@@ -3059,7 +3057,31 @@ if uploaded_file:
 
     with tab8:
         st.subheader("Realtime Mobile Browser Reminders")
-        st.info("Tap Allow to enable reminder alerts.")
+        st.markdown(
+            """
+            <a class="notify-enable-btn" href="/app/static/notification-permission.html" target="_blank" rel="noopener">
+                Allow Notifications
+            </a>
+            <style>
+            .notify-enable-btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 42px;
+                padding: 0 16px;
+                margin: 0 0 12px;
+                border-radius: 8px;
+                border: 1px solid rgba(46, 211, 161, .55);
+                background: linear-gradient(135deg, #176d60, #1e5f9b);
+                color: #ffffff !important;
+                font-size: 13px;
+                font-weight: 800;
+                text-decoration: none !important;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True,
+        )
         render_reminder_center(reminder_candidates(df, status_col, recruiter_col))
 
 else:
