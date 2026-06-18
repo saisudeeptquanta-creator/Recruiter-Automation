@@ -2404,7 +2404,6 @@ def render_reminder_center(candidates):
             const PARENT_NOTIFIER_SCRIPT = {parent_notifier_json};
             const KEY = "recruiterAutomation.reminders.v1";
             const FIRED_KEY = "recruiterAutomation.fired.v1";
-            const MOBILE_TOPIC_KEY = "recruiterAutomation.mobilePushTopic.v1";
             const SW_URL = "/app/static/reminder-sw.js";
             const root = document.getElementById("reminder-app");
             let audioReady = false;
@@ -2452,47 +2451,6 @@ def render_reminder_center(candidates):
 
             function saveFired(items) {{
                 localStorage.setItem(FIRED_KEY, JSON.stringify(items));
-            }}
-
-            function mobileTopic() {{
-                return (localStorage.getItem(MOBILE_TOPIC_KEY) || "").trim().replace(/[^a-zA-Z0-9_-]/g, "");
-            }}
-
-            function isWeakTopic(topic) {{
-                const weak = ["interview", "reminder", "recruiter", "test", "notification", "notifications"];
-                return !topic || topic.length < 18 || weak.includes(topic.toLowerCase());
-            }}
-
-            function makeTopic() {{
-                const bytes = new Uint8Array(8);
-                if (window.crypto && window.crypto.getRandomValues) {{
-                    window.crypto.getRandomValues(bytes);
-                }} else {{
-                    for (let i = 0; i < bytes.length; i += 1) bytes[i] = Math.floor(Math.random() * 256);
-                }}
-                return "recruiter_" + Array.from(bytes).map((byte) => byte.toString(16).padStart(2, "0")).join("");
-            }}
-
-            function ensureMobileTopic() {{
-                let topic = mobileTopic();
-                if (isWeakTopic(topic)) {{
-                    topic = makeTopic();
-                    saveMobileTopic(topic);
-                }}
-                return topic;
-            }}
-
-            function saveMobileTopic(value) {{
-                localStorage.setItem(MOBILE_TOPIC_KEY, String(value || "").trim().replace(/[^a-zA-Z0-9_-]/g, ""));
-            }}
-
-            function mobilePushUrl() {{
-                const topic = ensureMobileTopic();
-                return `https://ntfy.sh/${{encodeURIComponent(topic)}}`;
-            }}
-
-            function qrUrl() {{
-                return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${{encodeURIComponent(mobilePushUrl())}}`;
             }}
 
             function notificationApi() {{
@@ -2612,34 +2570,6 @@ def render_reminder_center(candidates):
                 }}
             }}
 
-            async function sendMobilePush(item) {{
-                const topic = ensureMobileTopic();
-                if (!topic) return false;
-                try {{
-                    const response = await fetch(`https://ntfy.sh/${{encodeURIComponent(topic)}}`, {{
-                        method: "POST",
-                        headers: {{
-                            "Title": item.title || "Recruitment reminder",
-                            "Priority": "high",
-                            "Tags": "bell"
-                        }},
-                        body: item.body || "Recruitment reminder due now."
-                    }});
-                    return response.ok;
-                }} catch (e) {{
-                    try {{
-                        await fetch(`https://ntfy.sh/${{encodeURIComponent(topic)}}`, {{
-                            method: "POST",
-                            mode: "no-cors",
-                            body: `${{item.title || "Recruitment reminder"}}\\n${{item.body || "Recruitment reminder due now."}}`
-                        }});
-                        return true;
-                    }} catch (err) {{
-                        return false;
-                    }}
-                }}
-            }}
-
             function showPopup(item) {{
                 const pop = document.getElementById("reminder-pop");
                 if (!pop) return;
@@ -2655,9 +2585,8 @@ def render_reminder_center(candidates):
                 if (fired[item.id]) return;
                 fired[item.id] = new Date().toISOString();
                 saveFired(fired);
-                const pushed = await sendMobilePush(item);
                 const shown = await showSystemNotification(item);
-                if (!pushed && !shown) showPopup(item);
+                if (!shown) showPopup(item);
                 render();
             }}
 
@@ -2735,27 +2664,18 @@ def render_reminder_center(candidates):
 
             function testReminder() {{
                 audioReady = true;
-                saveMobileTopic(document.getElementById("rem-topic").value);
                 const testItem = {{
                     id: "test-" + Date.now(),
                     title: "Test recruitment reminder",
                     body: "This is a sample reminder in your phone notification panel.",
                     dueAt: new Date().toISOString()
                 }};
-                sendMobilePush(testItem).then((sent) => {{
-                    const status = document.getElementById("push-status");
-                    if (status) {{
-                        status.textContent = sent
-                            ? "Test sent to your private phone receiver."
-                            : "Push send failed. Tap New Private Receiver and try again.";
-                    }}
-                }});
                 requestPermission().then(() => {{
                     showSystemNotification(testItem).then((shown) => {{
                         if (!shown) {{
                             showPopup({{
-                                title: "Mobile push test sent",
-                                body: `Topic: ${{mobileTopic()}}`
+                                title: "Notification not sent",
+                                body: "Allow notifications for this site, then keep this page open."
                             }});
                         }}
                     }});
@@ -2817,18 +2737,6 @@ def render_reminder_center(candidates):
                     </div>
                     <div class="reminder-grid">
                         <div class="reminder-card">
-                            <div class="push-setup">
-                                <div class="reminder-field">
-                                    <label>Private Phone Receiver</label>
-                                    <input id="rem-topic" value="${{escapeText(ensureMobileTopic())}}" readonly>
-                                </div>
-                                <div class="push-actions">
-                                    <a id="push-open" class="push-link" href="${{escapeText(mobilePushUrl())}}" target="_blank" rel="noopener">Subscribe Phone</a>
-                                    <button id="push-new" class="reminder-btn">New Private Receiver</button>
-                                </div>
-                                <img id="push-qr" class="push-qr" src="${{escapeText(qrUrl())}}" alt="Mobile push receiver QR">
-                                <div id="push-status" class="push-status">Subscribe this phone receiver once, then Test.</div>
-                            </div>
                             <div class="reminder-field">
                                 <label>Candidate</label>
                                 <select id="rem-candidate">
@@ -2873,17 +2781,6 @@ def render_reminder_center(candidates):
                 document.getElementById("rem-permission").addEventListener("click", requestPermission);
                 document.getElementById("rem-test").addEventListener("click", testReminder);
                 document.getElementById("rem-add").addEventListener("click", addReminder);
-                document.getElementById("rem-topic").addEventListener("input", (event) => {{
-                    saveMobileTopic(event.target.value);
-                    const link = document.getElementById("push-open");
-                    const qr = document.getElementById("push-qr");
-                    if (link) link.href = mobilePushUrl();
-                    if (qr) qr.src = qrUrl();
-                }});
-                document.getElementById("push-new").addEventListener("click", () => {{
-                    saveMobileTopic(makeTopic());
-                    render();
-                }});
                 document.getElementById("rem-candidate").addEventListener("change", useCandidate);
                 document.getElementById("rem-pop-close").addEventListener("click", () => {{
                     document.getElementById("reminder-pop").classList.remove("show");
