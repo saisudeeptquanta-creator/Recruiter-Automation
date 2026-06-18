@@ -2404,6 +2404,7 @@ def render_reminder_center(candidates):
             const PARENT_NOTIFIER_SCRIPT = {parent_notifier_json};
             const KEY = "recruiterAutomation.reminders.v1";
             const FIRED_KEY = "recruiterAutomation.fired.v1";
+            const NTFY_TOPIC_KEY = "recruiterAutomation.ntfyTopic.v1";
             const SW_URL = "/reminder-sw.js";
             const root = document.getElementById("reminder-app");
             let audioReady = false;
@@ -2451,6 +2452,33 @@ def render_reminder_center(candidates):
 
             function saveFired(items) {{
                 localStorage.setItem(FIRED_KEY, JSON.stringify(items));
+            }}
+
+            function ntfyTopic() {{
+                return (localStorage.getItem(NTFY_TOPIC_KEY) || "").trim().replace(/[^a-zA-Z0-9_-]/g, "");
+            }}
+
+            function saveNtfyTopic(value) {{
+                localStorage.setItem(NTFY_TOPIC_KEY, String(value || "").trim().replace(/[^a-zA-Z0-9_-]/g, ""));
+            }}
+
+            async function sendNtfy(item) {{
+                const topic = ntfyTopic();
+                if (!topic) return false;
+                try {{
+                    const response = await fetch(`https://ntfy.sh/${{encodeURIComponent(topic)}}`, {{
+                        method: "POST",
+                        headers: {{
+                            "Title": item.title || "Recruitment reminder",
+                            "Priority": "high",
+                            "Tags": "bell"
+                        }},
+                        body: item.body || "Recruitment reminder due now."
+                    }});
+                    return response.ok;
+                }} catch (e) {{
+                    return false;
+                }}
             }}
 
             function notificationApi() {{
@@ -2585,8 +2613,9 @@ def render_reminder_center(candidates):
                 if (fired[item.id]) return;
                 fired[item.id] = new Date().toISOString();
                 saveFired(fired);
+                const ntfySent = await sendNtfy(item);
                 const shown = await showSystemNotification(item);
-                if (!shown) showPopup(item);
+                if (!ntfySent && !shown) showPopup(item);
                 render();
             }}
 
@@ -2664,18 +2693,27 @@ def render_reminder_center(candidates):
 
             function testReminder() {{
                 audioReady = true;
+                saveNtfyTopic(document.getElementById("ntfy-topic").value);
                 const testItem = {{
                     id: "test-" + Date.now(),
                     title: "Test recruitment reminder",
                     body: "This is a sample reminder in your phone notification panel.",
                     dueAt: new Date().toISOString()
                 }};
+                sendNtfy(testItem).then((sent) => {{
+                    const status = document.getElementById("ntfy-status");
+                    if (status) {{
+                        status.textContent = sent
+                            ? "Sent to ntfy. Check the phone subscribed to this topic."
+                            : "Enter the same ntfy topic your phone is subscribed to.";
+                    }}
+                }});
                 requestPermission().then(() => {{
                     showSystemNotification(testItem).then((shown) => {{
                         if (!shown) {{
                             showPopup({{
-                                title: "Notification not sent",
-                                body: "Allow notifications for this site, then keep this page open."
+                                title: "Test sent",
+                                body: ntfyTopic() ? "Check ntfy on your phone." : "Enter your ntfy topic first."
                             }});
                         }}
                     }});
@@ -2738,6 +2776,11 @@ def render_reminder_center(candidates):
                     <div class="reminder-grid">
                         <div class="reminder-card">
                             <div class="reminder-field">
+                                <label>ntfy Topic</label>
+                                <input id="ntfy-topic" value="${{escapeText(ntfyTopic())}}" placeholder="Same topic subscribed on phone">
+                            </div>
+                            <div id="ntfy-status" class="reminder-item-body">Install/open ntfy on phone, subscribe to this same topic, then Test.</div>
+                            <div class="reminder-field">
                                 <label>Candidate</label>
                                 <select id="rem-candidate">
                                     <option value="">Manual reminder</option>
@@ -2781,6 +2824,7 @@ def render_reminder_center(candidates):
                 document.getElementById("rem-permission").addEventListener("click", requestPermission);
                 document.getElementById("rem-test").addEventListener("click", testReminder);
                 document.getElementById("rem-add").addEventListener("click", addReminder);
+                document.getElementById("ntfy-topic").addEventListener("input", (event) => saveNtfyTopic(event.target.value));
                 document.getElementById("rem-candidate").addEventListener("change", useCandidate);
                 document.getElementById("rem-pop-close").addEventListener("click", () => {{
                     document.getElementById("reminder-pop").classList.remove("show");
