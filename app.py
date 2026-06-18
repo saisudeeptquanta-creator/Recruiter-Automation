@@ -3,6 +3,8 @@ import streamlit.components.v1 as components
 import pandas as pd
 import html
 import json
+import base64
+import io
 from datetime import datetime
 
 st.set_page_config(page_title="Recruitment Count Dashboard", page_icon=":clipboard:", layout="wide")
@@ -1902,6 +1904,62 @@ st.markdown("""
 
 uploaded_file = st.file_uploader("Upload Recruitment Excel File", type=["xlsx", "xls", "csv"])
 
+with st.expander("Office laptop upload fix", expanded=False):
+    components.html(
+        """
+        <div style="font-family: Inter, system-ui, sans-serif; color:#101828;">
+            <input id="office-file" type="file" accept=".xlsx,.xls,.csv" style="width:100%; margin-bottom:10px;">
+            <textarea id="office-output" readonly placeholder="Encoded file will appear here after choosing a file."
+                style="width:100%; height:130px; border:1px solid #d6dee9; border-radius:8px; padding:10px; font-size:12px;"></textarea>
+            <button id="office-copy" type="button"
+                style="margin-top:8px; min-height:34px; padding:0 12px; border:1px solid #2457d6; border-radius:8px; background:#2457d6; color:white; font-weight:700;">
+                Copy encoded file
+            </button>
+            <div id="office-status" style="margin-top:8px; font-size:12px; color:#667085;"></div>
+        </div>
+        <script>
+        const fileInput = document.getElementById("office-file");
+        const output = document.getElementById("office-output");
+        const copy = document.getElementById("office-copy");
+        const status = document.getElementById("office-status");
+
+        fileInput.addEventListener("change", () => {
+            const file = fileInput.files && fileInput.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+                const base64 = String(reader.result).split(",")[1] || "";
+                output.value = `${file.name}|${base64}`;
+                status.textContent = "Encoded. Copy it and paste below.";
+            };
+            reader.onerror = () => {
+                status.textContent = "Could not read this file.";
+            };
+            reader.readAsDataURL(file);
+        });
+
+        copy.addEventListener("click", async () => {
+            output.select();
+            output.setSelectionRange(0, output.value.length);
+            try {
+                await navigator.clipboard.writeText(output.value);
+                status.textContent = "Copied. Paste it in the box below.";
+            } catch (e) {
+                document.execCommand("copy");
+                status.textContent = "Copied. Paste it in the box below.";
+            }
+        });
+        </script>
+        """,
+        height=245,
+    )
+    encoded_upload = st.text_area(
+        "Paste encoded file here",
+        key="encoded_upload",
+        height=90,
+        placeholder="Paste the copied encoded file here if normal upload shows 403.",
+    )
+
 STATUS_ORDER = [
     "YTS - R1", "Sch - R1 - Berribot", "No Show - Berribot",
     "No Show - R1", "Reject - R1 - Berribot", "Reject - R1",
@@ -1934,6 +1992,19 @@ def load_file(file):
     if file.name.endswith(".csv"):
         return pd.read_csv(file)
     return pd.read_excel(file)
+
+def load_encoded_file(encoded_value):
+    if not encoded_value or "|" not in encoded_value:
+        return None, None
+
+    filename, encoded_data = encoded_value.strip().split("|", 1)
+    raw = base64.b64decode(encoded_data)
+    buffer = io.BytesIO(raw)
+    clean_name = filename.strip() or "office-upload.xlsx"
+
+    if clean_name.lower().endswith(".csv"):
+        return pd.read_csv(buffer), clean_name
+    return pd.read_excel(buffer), clean_name
 
 def clean_df(df):
     df.columns = df.columns.astype(str).str.strip()
@@ -3026,8 +3097,22 @@ def filter_table(df, status_col, selected_status, search_text):
 
     return filtered
 
-if uploaded_file:
-    df = load_file(uploaded_file)
+encoded_df = None
+encoded_filename = None
+if "encoded_upload" in st.session_state and st.session_state.encoded_upload.strip():
+    try:
+        encoded_df, encoded_filename = load_encoded_file(st.session_state.encoded_upload)
+    except Exception:
+        st.error("Encoded file could not be read. Copy the full encoded text and paste again.")
+
+if uploaded_file or encoded_df is not None:
+    if encoded_df is not None:
+        df = encoded_df
+        dataset_name = encoded_filename
+    else:
+        df = load_file(uploaded_file)
+        dataset_name = uploaded_file.name
+
     df = clean_df(df)
 
     status_col = find_column(df, ["status", "candidate status", "current status"])
@@ -3042,7 +3127,7 @@ if uploaded_file:
     <div class="overview-strip">
         <div class="overview-cell">
             <div class="eyebrow">Dataset Ready</div>
-            <div class="value">{html.escape(uploaded_file.name)}</div>
+            <div class="value">{html.escape(str(dataset_name))}</div>
         </div>
         <div class="overview-cell">
             <div class="eyebrow">Status Column</div>
