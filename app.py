@@ -2216,6 +2216,46 @@ def render_reminder_center(candidates):
             min-height: 82px;
             resize: vertical;
         }}
+        .push-setup {{
+            display: grid;
+            gap: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #263650;
+            background: #0a1020;
+            border-radius: 8px;
+            padding: 10px;
+        }}
+        .push-actions {{
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }}
+        .push-link {{
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 36px;
+            padding: 0 12px;
+            border-radius: 7px;
+            border: 1px solid rgba(46, 211, 161, .55);
+            background: #123229;
+            color: #eef4ff;
+            font-size: 12px;
+            font-weight: 800;
+            text-decoration: none;
+        }}
+        .push-qr {{
+            width: 126px;
+            height: 126px;
+            border-radius: 8px;
+            background: #fff;
+            border: 1px solid #31415d;
+        }}
+        .push-status {{
+            color: var(--rem-muted);
+            font-size: 12px;
+            line-height: 1.45;
+        }}
         .reminder-row {{
             display: flex;
             flex-wrap: wrap;
@@ -2418,8 +2458,36 @@ def render_reminder_center(candidates):
                 return (localStorage.getItem(MOBILE_TOPIC_KEY) || "").trim().replace(/[^a-zA-Z0-9_-]/g, "");
             }}
 
+            function makeTopic() {{
+                const bytes = new Uint8Array(8);
+                if (window.crypto && window.crypto.getRandomValues) {{
+                    window.crypto.getRandomValues(bytes);
+                }} else {{
+                    for (let i = 0; i < bytes.length; i += 1) bytes[i] = Math.floor(Math.random() * 256);
+                }}
+                return "recruiter_" + Array.from(bytes).map((byte) => byte.toString(16).padStart(2, "0")).join("");
+            }}
+
+            function ensureMobileTopic() {{
+                let topic = mobileTopic();
+                if (!topic) {{
+                    topic = makeTopic();
+                    saveMobileTopic(topic);
+                }}
+                return topic;
+            }}
+
             function saveMobileTopic(value) {{
                 localStorage.setItem(MOBILE_TOPIC_KEY, String(value || "").trim().replace(/[^a-zA-Z0-9_-]/g, ""));
+            }}
+
+            function mobilePushUrl() {{
+                const topic = ensureMobileTopic();
+                return `https://ntfy.sh/${{encodeURIComponent(topic)}}`;
+            }}
+
+            function qrUrl() {{
+                return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${{encodeURIComponent(mobilePushUrl())}}`;
             }}
 
             function notificationApi() {{
@@ -2540,7 +2608,7 @@ def render_reminder_center(candidates):
             }}
 
             async function sendMobilePush(item) {{
-                const topic = mobileTopic();
+                const topic = ensureMobileTopic();
                 if (!topic) return false;
                 try {{
                     const response = await fetch(`https://ntfy.sh/${{encodeURIComponent(topic)}}`, {{
@@ -2669,13 +2737,20 @@ def render_reminder_center(candidates):
                     body: "This is a sample reminder in your phone notification panel.",
                     dueAt: new Date().toISOString()
                 }};
-                sendMobilePush(testItem);
+                sendMobilePush(testItem).then((sent) => {{
+                    const status = document.getElementById("push-status");
+                    if (status) {{
+                        status.textContent = sent
+                            ? `Sent to ${{mobileTopic()}}. If the phone did not ring, subscribe the phone to this exact topic first.`
+                            : "Push send failed. Check the mobile push topic and try again.";
+                    }}
+                }});
                 requestPermission().then(() => {{
                     showSystemNotification(testItem).then((shown) => {{
                         if (!shown) {{
                             showPopup({{
-                                title: "Mobile push sent",
-                                body: mobileTopic() ? "Check your phone notification panel." : "Add a mobile push topic first."
+                                title: "Mobile push test sent",
+                                body: `Topic: ${{mobileTopic()}}`
                             }});
                         }}
                     }});
@@ -2737,9 +2812,17 @@ def render_reminder_center(candidates):
                     </div>
                     <div class="reminder-grid">
                         <div class="reminder-card">
-                            <div class="reminder-field">
-                                <label>Mobile Push Topic</label>
-                                <input id="rem-topic" value="${{escapeText(mobileTopic())}}" placeholder="Example: recruiter_yourname_2026">
+                            <div class="push-setup">
+                                <div class="reminder-field">
+                                    <label>Mobile Push Topic</label>
+                                    <input id="rem-topic" value="${{escapeText(ensureMobileTopic())}}" placeholder="Example: recruiter_yourname_2026">
+                                </div>
+                                <div class="push-actions">
+                                    <a id="push-open" class="push-link" href="${{escapeText(mobilePushUrl())}}" target="_blank" rel="noopener">Open Phone Receiver</a>
+                                    <button id="push-new" class="reminder-btn">New Topic</button>
+                                </div>
+                                <img id="push-qr" class="push-qr" src="${{escapeText(qrUrl())}}" alt="Mobile push receiver QR">
+                                <div id="push-status" class="push-status">Use the receiver link or QR on the phone once, then Test.</div>
                             </div>
                             <div class="reminder-field">
                                 <label>Candidate</label>
@@ -2785,7 +2868,17 @@ def render_reminder_center(candidates):
                 document.getElementById("rem-permission").addEventListener("click", requestPermission);
                 document.getElementById("rem-test").addEventListener("click", testReminder);
                 document.getElementById("rem-add").addEventListener("click", addReminder);
-                document.getElementById("rem-topic").addEventListener("input", (event) => saveMobileTopic(event.target.value));
+                document.getElementById("rem-topic").addEventListener("input", (event) => {{
+                    saveMobileTopic(event.target.value);
+                    const link = document.getElementById("push-open");
+                    const qr = document.getElementById("push-qr");
+                    if (link) link.href = mobilePushUrl();
+                    if (qr) qr.src = qrUrl();
+                }});
+                document.getElementById("push-new").addEventListener("click", () => {{
+                    saveMobileTopic(makeTopic());
+                    render();
+                }});
                 document.getElementById("rem-candidate").addEventListener("change", useCandidate);
                 document.getElementById("rem-pop-close").addEventListener("click", () => {{
                     document.getElementById("reminder-pop").classList.remove("show");
