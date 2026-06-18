@@ -1471,19 +1471,40 @@ div[data-testid="stTabs"] > div:last-child,
     box-shadow: none !important;
 }
 
-[data-testid="stFileUploader"] button {
+[data-testid="stFileUploader"] button,
+[data-testid="stFileUploader"] [data-testid="baseButton-secondary"] {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 7px !important;
+    min-width: 116px !important;
     font-size: 0 !important;
+    line-height: 1 !important;
 }
 
-[data-testid="stFileUploader"] button * {
+[data-testid="stFileUploader"] button *,
+[data-testid="stFileUploader"] [data-testid="baseButton-secondary"] * {
+    display: none !important;
     font-size: 0 !important;
     color: transparent !important;
 }
 
-[data-testid="stFileUploader"] button::after {
+[data-testid="stFileUploader"] button::before,
+[data-testid="stFileUploader"] [data-testid="baseButton-secondary"]::before {
+    content: "";
+    width: 15px;
+    height: 15px;
+    flex: 0 0 15px;
+    background-color: #667085;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4'/%3E%3Cpolyline points='17 8 12 3 7 8'/%3E%3Cline x1='12' x2='12' y1='3' y2='15'/%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4'/%3E%3Cpolyline points='17 8 12 3 7 8'/%3E%3Cline x1='12' x2='12' y1='3' y2='15'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+[data-testid="stFileUploader"] button::after,
+[data-testid="stFileUploader"] [data-testid="baseButton-secondary"]::after {
     content: "Upload";
     color: #667085;
-    font-size: 12px;
+    font-size: 12px !important;
     font-weight: 500;
 }
 
