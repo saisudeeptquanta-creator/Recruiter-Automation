@@ -2041,7 +2041,7 @@ def render_reminder_center(candidates):
     parent_notifier_script = """
 (function () {
     if (window.RecruiterPanelNotify) return;
-    const SW_URL = "/app/static/reminder-sw.js";
+    const SW_URL = "/reminder-sw.js";
 
     async function registerWorker() {
         if (!("serviceWorker" in navigator)) {
@@ -2404,7 +2404,7 @@ def render_reminder_center(candidates):
             const PARENT_NOTIFIER_SCRIPT = {parent_notifier_json};
             const KEY = "recruiterAutomation.reminders.v1";
             const FIRED_KEY = "recruiterAutomation.fired.v1";
-            const SW_URL = "/app/static/reminder-sw.js";
+            const SW_URL = "/reminder-sw.js";
             const root = document.getElementById("reminder-app");
             let audioReady = false;
 
