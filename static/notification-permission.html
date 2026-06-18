@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#101828">
+    <title>Enable Notifications</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            letter-spacing: 0;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 18px;
+            background: #0b1220;
+            color: #eef4ff;
+            font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        main {
+            width: min(430px, 100%);
+            background: #111a2b;
+            border: 1px solid #263650;
+            border-radius: 10px;
+            padding: 18px;
+            box-shadow: 0 24px 70px rgba(0, 0, 0, .35);
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 22px;
+            line-height: 1.2;
+        }
+
+        p {
+            margin: 0 0 16px;
+            color: #93a4bd;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+
+        button {
+            width: 100%;
+            min-height: 46px;
+            border: 1px solid rgba(46, 211, 161, .55);
+            border-radius: 8px;
+            background: linear-gradient(135deg, #176d60, #1e5f9b);
+            color: #eef4ff;
+            font-size: 15px;
+            font-weight: 800;
+        }
+
+        .status {
+            margin-top: 12px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #31415d;
+            background: #0a1020;
+            color: #93a4bd;
+            font-size: 13px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>Enable Reminders</h1>
+        <p>Tap the button and allow notifications for recruiter reminders.</p>
+        <button id="allow">Allow Notifications</button>
+        <div id="status" class="status">Waiting</div>
+    </main>
+
+    <script>
+        const statusEl = document.getElementById("status");
+        const workerUrl = "/app/static/reminder-sw.js";
+
+        function statusText(value) {
+            if (!("Notification" in window)) return "Notifications unsupported";
+            if (!window.isSecureContext) return "Open this app with HTTPS to enable notifications";
+            if (value === "granted") return "Notifications enabled";
+            if (value === "denied") return "Notifications blocked";
+            return "Permission needed";
+        }
+
+        function render() {
+            statusEl.textContent = statusText(window.Notification ? Notification.permission : "unsupported");
+            try {
+                localStorage.setItem("recruiterAutomation.notificationPermission.v1", String(Date.now()));
+            } catch (e) {}
+        }
+
+        async function registerWorker() {
+            if (!("serviceWorker" in navigator)) return null;
+            try {
+                return await navigator.serviceWorker.register(workerUrl);
+            } catch (e) {
+                return null;
+            }
+        }
+
+        async function enable() {
+            await registerWorker();
+            if (!("Notification" in window)) {
+                render();
+                return;
+            }
+            if (Notification.permission === "default") {
+                await Notification.requestPermission();
+            }
+            render();
+            if (Notification.permission === "granted") {
+                try {
+                    const reg = await registerWorker();
+                    const options = {
+                        body: "Recruiter reminders are enabled.",
+                        icon: "/app/static/icon.png",
+                        badge: "/app/static/icon.png",
+                        tag: "recruiter-reminders-enabled",
+                        renotify: true,
+                        requireInteraction: false,
+                        data: { url: "/" }
+                    };
+                    if (reg && reg.showNotification) {
+                        await reg.showNotification("Recruiter Automation", options);
+                    } else {
+                        new Notification("Recruiter Automation", options);
+                    }
+                } catch (e) {}
+                setTimeout(() => {
+                    try {
+                        window.close();
+                    } catch (e) {}
+                }, 900);
+            }
+        }
+
+        document.getElementById("allow").addEventListener("click", enable);
+        render();
+        registerWorker();
+    </script>
+</body>
+</html>

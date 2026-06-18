@@ -2275,6 +2275,7 @@ def render_reminder_center(candidates):
             const KEY = "recruiterAutomation.reminders.v1";
             const FIRED_KEY = "recruiterAutomation.fired.v1";
             const SW_URL = "/app/static/reminder-sw.js";
+            const PERMISSION_HELPER_URL = "/app/static/notification-permission.html";
             const root = document.getElementById("reminder-app");
             let audioReady = false;
 
@@ -2310,6 +2311,29 @@ def render_reminder_center(candidates):
 
             function notificationApi() {{
                 return window.Notification || (window.parent && window.parent.Notification);
+            }}
+
+            function parentWindow() {{
+                try {{
+                    return window.parent && window.parent !== window ? window.parent : window;
+                }} catch (e) {{
+                    return window;
+                }}
+            }}
+
+            function setFramePermissions() {{
+                try {{
+                    const doc = window.parent.document;
+                    Array.from(doc.querySelectorAll("iframe")).forEach((frame) => {{
+                        if (frame.contentWindow !== window) return;
+                        const allow = frame.getAttribute("allow") || "";
+                        const parts = allow.split(";").map((item) => item.trim()).filter(Boolean);
+                        ["notifications", "autoplay", "clipboard-write"].forEach((item) => {{
+                            if (!parts.includes(item)) parts.push(item);
+                        }});
+                        frame.setAttribute("allow", parts.join("; "));
+                    }});
+                }} catch (e) {{}}
             }}
 
             function permission() {{
@@ -2358,8 +2382,26 @@ def render_reminder_center(candidates):
                 if (nav.vibrate) nav.vibrate([220, 90, 220, 90, 420]);
             }}
 
+            function openPermissionHelper() {{
+                const target = parentWindow();
+                try {{
+                    const helper = target.open(PERMISSION_HELPER_URL, "recruiterNotificationPermission", "popup,width=420,height=640");
+                    if (helper) {{
+                        helper.focus();
+                        return true;
+                    }}
+                }} catch (e) {{}}
+                try {{
+                    target.location.href = PERMISSION_HELPER_URL;
+                    return true;
+                }} catch (e) {{
+                    return false;
+                }}
+            }}
+
             async function requestPermission() {{
                 audioReady = true;
+                setFramePermissions();
                 await registerWorker();
                 const api = notificationApi();
                 if (!api) {{
@@ -2370,6 +2412,9 @@ def render_reminder_center(candidates):
                     try {{
                         await api.requestPermission();
                     }} catch (e) {{}}
+                }}
+                if (api.permission === "default") {{
+                    openPermissionHelper();
                 }}
                 render();
                 return api.permission;
@@ -2618,10 +2663,13 @@ def render_reminder_center(candidates):
             }}
 
             render();
+            setFramePermissions();
             registerWorker();
             setInterval(checkDue, 10000);
             document.addEventListener("visibilitychange", checkDue);
+            window.addEventListener("storage", render);
             window.addEventListener("focus", checkDue);
+            window.addEventListener("focus", render);
             checkDue();
         }})();
         </script>
@@ -3011,7 +3059,7 @@ if uploaded_file:
 
     with tab8:
         st.subheader("Realtime Mobile Browser Reminders")
-        st.info("Tap Allow once on your mobile browser. Browser security does not allow any app to bypass notification permission, but after permission this will pop system notifications and an in-app alert when the reminder is due.")
+        st.info("Tap Allow to enable reminder alerts.")
         render_reminder_center(reminder_candidates(df, status_col, recruiter_col))
 
 else:
