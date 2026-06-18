@@ -2382,17 +2382,18 @@ def render_reminder_center(candidates):
                 if (nav.vibrate) nav.vibrate([220, 90, 220, 90, 420]);
             }}
 
-            function openPermissionHelper() {{
+            function openPermissionHelper(mode) {{
                 const target = parentWindow();
+                const url = mode ? `${{PERMISSION_HELPER_URL}}?mode=${{encodeURIComponent(mode)}}` : PERMISSION_HELPER_URL;
                 try {{
-                    const helper = target.open(PERMISSION_HELPER_URL, "recruiterNotificationPermission", "popup,width=420,height=640");
+                    const helper = target.open(url, "recruiterNotificationPermission", "popup,width=420,height=640");
                     if (helper) {{
                         helper.focus();
                         return true;
                     }}
                 }} catch (e) {{}}
                 try {{
-                    target.location.href = PERMISSION_HELPER_URL;
+                    target.location.href = url;
                     return true;
                 }} catch (e) {{
                     return false;
@@ -2567,14 +2568,7 @@ def render_reminder_center(candidates):
 
             function testReminder() {{
                 audioReady = true;
-                requestPermission().then(() => {{
-                    fire({{
-                        id: "test-" + Date.now(),
-                        title: "Test recruitment reminder",
-                        body: "Notifications are working on this browser.",
-                        dueAt: new Date().toISOString()
-                    }});
-                }});
+                openPermissionHelper("test");
             }}
 
             function statusHtml() {{

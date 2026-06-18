@@ -70,14 +70,23 @@
 <body>
     <main>
         <h1>Enable Reminders</h1>
-        <p>Tap the button and allow notifications for recruiter reminders.</p>
+        <p id="copy">Tap the button and allow notifications for recruiter reminders.</p>
         <button id="allow">Allow Notifications</button>
         <div id="status" class="status">Waiting</div>
     </main>
 
     <script>
         const statusEl = document.getElementById("status");
+        const copyEl = document.getElementById("copy");
+        const allowBtn = document.getElementById("allow");
         const workerUrl = "/app/static/reminder-sw.js";
+        const params = new URLSearchParams(window.location.search);
+        const mode = params.get("mode") || "enable";
+
+        if (mode === "test") {
+            copyEl.textContent = "Tap the button to send a sample reminder to your mobile notification panel.";
+            allowBtn.textContent = "Send Test Notification";
+        }
 
         function statusText(value) {
             if (!("Notification" in window)) return "Notifications unsupported";
@@ -107,6 +116,27 @@
             }
         }
 
+        async function showPanelNotification(title, body, tag) {
+            const reg = await registerWorker();
+            const readyReg = navigator.serviceWorker && navigator.serviceWorker.ready ? await navigator.serviceWorker.ready : reg;
+            if (readyReg && readyReg.showNotification) {
+                await readyReg.showNotification(title, {
+                    body,
+                    icon: "/app/static/icon.png",
+                    badge: "/app/static/icon.png",
+                    tag,
+                    renotify: true,
+                    requireInteraction: true,
+                    silent: false,
+                    vibrate: [260, 120, 260, 120, 480],
+                    timestamp: Date.now(),
+                    data: { url: "/" }
+                });
+                return true;
+            }
+            return false;
+        }
+
         async function enable() {
             await registerWorker();
             if (!("Notification" in window)) {
@@ -119,41 +149,19 @@
             render();
             if (Notification.permission === "granted") {
                 try {
-                    const reg = await registerWorker();
-                    const readyReg = navigator.serviceWorker && navigator.serviceWorker.ready ? await navigator.serviceWorker.ready : reg;
-                    const worker = readyReg && (readyReg.active || readyReg.waiting || readyReg.installing);
-                    if (worker) {
-                        worker.postMessage({
-                            type: "SHOW_RECRUITER_NOTIFICATION",
-                            title: "Recruiter Automation",
-                            body: "Recruiter reminders are enabled.",
-                            tag: "recruiter-reminders-enabled",
-                            url: "/"
-                        });
-                    } else if (reg && reg.showNotification) {
-                        await reg.showNotification("Recruiter Automation", {
-                            body: "Recruiter reminders are enabled.",
-                            icon: "/app/static/icon.png",
-                            badge: "/app/static/icon.png",
-                            tag: "recruiter-reminders-enabled",
-                            renotify: true,
-                            requireInteraction: true,
-                            silent: false,
-                            vibrate: [260, 120, 260, 120, 480],
-                            timestamp: Date.now(),
-                            data: { url: "/" }
-                        });
-                    }
-                } catch (e) {}
-                setTimeout(() => {
-                    try {
-                        window.close();
-                    } catch (e) {}
-                }, 900);
+                    const title = mode === "test" ? "Test recruitment reminder" : "Recruiter Automation";
+                    const body = mode === "test"
+                        ? "This is a sample reminder in your phone notification panel."
+                        : "Recruiter reminders are enabled.";
+                    await showPanelNotification(title, body, "recruiter-reminders-" + mode + "-" + Date.now());
+                    statusEl.textContent = mode === "test" ? "Test notification sent" : "Notifications enabled";
+                } catch (e) {
+                    statusEl.textContent = "Notification failed";
+                }
             }
         }
 
-        document.getElementById("allow").addEventListener("click", enable);
+        allowBtn.addEventListener("click", enable);
         render();
         registerWorker();
     </script>
