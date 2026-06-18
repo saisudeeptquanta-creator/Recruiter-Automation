@@ -223,8 +223,8 @@ components.html(
 
         function installPwaTags(doc) {
             addTag(doc, 'link', { rel: 'manifest', href: '/app/static/manifest.json' });
-            addTag(doc, 'link', { rel: 'icon', href: '/app/static/icon.svg', type: 'image/svg+xml' });
-            addTag(doc, 'link', { rel: 'apple-touch-icon', href: '/app/static/icon.svg' });
+            addTag(doc, 'link', { rel: 'icon', href: '/app/static/icon.png', type: 'image/png' });
+            addTag(doc, 'link', { rel: 'apple-touch-icon', href: '/app/static/icon.png' });
             addTag(doc, 'meta', { name: 'theme-color', content: '#101828' });
             addTag(doc, 'meta', { name: 'mobile-web-app-capable', content: 'yes' });
             addTag(doc, 'meta', { name: 'apple-mobile-web-app-capable', content: 'yes' });
