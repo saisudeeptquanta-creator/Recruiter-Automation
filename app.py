@@ -1471,6 +1471,22 @@ div[data-testid="stTabs"] > div:last-child,
     box-shadow: none !important;
 }
 
+[data-testid="stFileUploader"] button {
+    font-size: 0 !important;
+}
+
+[data-testid="stFileUploader"] button * {
+    font-size: 0 !important;
+    color: transparent !important;
+}
+
+[data-testid="stFileUploader"] button::after {
+    content: "Upload";
+    color: #667085;
+    font-size: 12px;
+    font-weight: 500;
+}
+
 .stTabs [data-baseweb="tab-list"] {
     background: #ffffff !important;
     border: 1px solid #d8e0ea !important;
