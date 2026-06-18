@@ -6,6 +6,111 @@ from datetime import datetime
 
 st.set_page_config(page_title="Recruitment Count Dashboard", page_icon=":clipboard:", layout="wide")
 
+st.markdown("""
+<style>
+.welcome-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 999999;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 45% 42%, rgba(124, 58, 237, 0.10), transparent 28%),
+        #fbfcff;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity .65s ease, visibility .65s ease;
+}
+
+.welcome-overlay.welcome-hide {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.welcome-text {
+    color: #101828;
+    font-family: 'Inter', sans-serif;
+    font-size: 34px;
+    font-weight: 650;
+    line-height: 1.15;
+    text-align: center;
+    padding: 0 18px;
+    transform: translateY(18px) scale(.96);
+    opacity: 0;
+    animation: welcomeTextIn 1.2s cubic-bezier(.2, .8, .2, 1) forwards;
+}
+
+.welcome-text span {
+    display: block;
+    margin-top: 10px;
+    color: #6d48c9;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+@keyframes welcomeTextIn {
+    0% {
+        opacity: 0;
+        transform: translateY(18px) scale(.96);
+    }
+    18%,
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@media (max-width: 760px) {
+    .welcome-text {
+        font-size: 25px;
+    }
+
+    .welcome-text span {
+        font-size: 11px;
+    }
+}
+</style>
+<div id="welcome-overlay" class="welcome-overlay">
+    <div class="welcome-text">
+        Welcome To Recruiter Automation
+        <span>Preparing your dashboard</span>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+components.html(
+    """
+    <script>
+    (function () {
+        function hideWelcome() {
+            try {
+                const doc = window.parent.document;
+                const overlay = doc.getElementById('welcome-overlay');
+                if (!overlay) return;
+                setTimeout(function () {
+                    overlay.classList.add('welcome-hide');
+                }, 2000);
+            } catch (e) {}
+        }
+
+        try {
+            if (window.parent.document.readyState === 'complete') {
+                hideWelcome();
+            } else {
+                window.parent.addEventListener('load', hideWelcome, { once: true });
+                setTimeout(hideWelcome, 8000);
+            }
+        } catch (e) {
+            setTimeout(hideWelcome, 3000);
+        }
+    })();
+    </script>
+    """,
+    height=0,
+    width=0,
+)
+
 components.html(
     """
     <script>
@@ -439,6 +544,15 @@ h2, h3 {
     line-height: 1.25;
 }
 
+.tab-heading-tight {
+    margin: 0 !important;
+    padding: 0 !important;
+    color: var(--text) !important;
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    line-height: 1.25 !important;
+}
+
 [data-testid="stMarkdownContainer"] p {
     font-size: 12px;
 }
@@ -666,7 +780,7 @@ h1, h2, h3 {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 10px;
-    margin: 8px 0 14px;
+    margin: 0px 0 14px;
 }
 
 .insight-card,
@@ -1756,87 +1870,7 @@ div[data-testid="stTabs"] > div:last-child,
     }
 }
 
-/* PAGE OPEN WELCOME ANIMATION */
-.welcome-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    display: grid;
-    place-items: center;
-    pointer-events: none;
-    background:
-        radial-gradient(circle at 45% 42%, rgba(124, 58, 237, 0.10), transparent 28%),
-        rgba(251, 252, 255, 0.92);
-    animation: welcomeOverlayOut 3.2s ease forwards;
-}
-
-.welcome-text {
-    color: #101828;
-    font-size: 34px;
-    font-weight: 650;
-    line-height: 1.15;
-    text-align: center;
-    padding: 0 18px;
-    transform: translateY(18px) scale(.96);
-    opacity: 0;
-    animation: welcomeTextIn 2.4s cubic-bezier(.2, .8, .2, 1) forwards;
-}
-
-.welcome-text span {
-    display: block;
-    margin-top: 10px;
-    color: #6d48c9;
-    font-size: 13px;
-    font-weight: 500;
-}
-
-@keyframes welcomeTextIn {
-    0% {
-        opacity: 0;
-        transform: translateY(18px) scale(.96);
-    }
-    28%,
-    72% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-    100% {
-        opacity: 0;
-        transform: translateY(-12px) scale(1.02);
-    }
-}
-
-@keyframes welcomeOverlayOut {
-    0%,
-    78% {
-        opacity: 1;
-        visibility: visible;
-    }
-    100% {
-        opacity: 0;
-        visibility: hidden;
-    }
-}
-
-@media (max-width: 760px) {
-    .welcome-text {
-        font-size: 25px;
-    }
-
-    .welcome-text span {
-        font-size: 11px;
-    }
-}
 </style>
-""", unsafe_allow_html=True)
-
-st.markdown("""
-<div class="welcome-overlay">
-    <div class="welcome-text">
-        Welcome To Recruiter Automation
-        <span>Preparing your dashboard</span>
-    </div>
-</div>
 """, unsafe_allow_html=True)
 
 st.markdown("""
@@ -2247,7 +2281,7 @@ if uploaded_file:
         render_table(filtered)
 
     with tab7:
-        st.subheader("Recruiter Lead Review")
+        st.markdown('<h3 class="tab-heading-tight">Recruiter Lead Review</h3>', unsafe_allow_html=True)
 
         if not recruiter_col or "Message" in lead_review.columns:
             st.info("Recruiter column not found. Add a recruiter, HR, owner, or assigned-to column to generate lead review insights.")
@@ -2312,4 +2346,4 @@ if uploaded_file:
             render_table(focus_rows)
 
 else:
-    st.info("Upload your Excel file to see all counts.")
+    st.info("Waiting for a file to generate counts.")
